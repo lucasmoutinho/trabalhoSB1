@@ -1,2 +1,5 @@
 ligador
 montador
+*.pre
+*.obj
+*.e
