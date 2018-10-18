@@ -8,14 +8,37 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
+#include <vector> 
 using namespace std;
 
-void first_passage() {
-  cout << "FALA FRED" << endl;
-  string s;
-  getline(cin, s);
-  transform(s.begin(), s.end(), s.begin(), ::toupper); /*Deixa toda a string maiuscula*/
-  cout << s << endl;
+
+/*
+Retorna um array de palavras, posições:
+0 - rotulo
+1 - operação
+2 - operador 1
+3 - operador 2
+*/
+vector<string> separate_instructions(string line) {
+  vector<string> words;
+  words.push_back("");
+
+  return words;
+}
+
+/*Função de primeira passagem do montador*/
+void first_passage(char *argv[]) {
+  ifstream inputfile;
+  int line_count=1, instruction_count=0;
+  string line, aux;
+
+  inputfile.open(argv[1]); /*Abre o arquivo*/
+
+  while (getline(inputfile, line)) {
+    transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
+    separate_instructions(line);
+  }
+  
 }
 
 void second_passage() {
@@ -44,11 +67,9 @@ bool fexists(const string &filename){
 }
 
 int main(int argc, char *argv[]) {
-  ifstream inputfile;
   if (correcet_execution(argc, argv[1])) {
     if (fexists(argv[1])) {
-      inputfile.open(argv[1]);
-      first_passage();
+      first_passage(argv);
       second_passage();
     }
     else{
