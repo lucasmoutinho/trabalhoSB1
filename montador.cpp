@@ -245,6 +245,7 @@ int main(int argc, char *argv[]) {
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
     }
+  }
 
   return 0;
 }
