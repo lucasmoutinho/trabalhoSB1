@@ -138,7 +138,7 @@ Retorna um array de palavras, posições:
 3 - operador 2
 */
 vector<string> separate_instructions(string line, ifstream *inputfile) {
-  vector<string> words;
+  vector<string> words, wordsAux;
   string aux;
   unsigned int i=0, j=0, finish=0;
   int size;
@@ -156,10 +156,10 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
       aux = aux + line[i];
 
       if ((line[i+1] == ' ') || (line[i+1] == '\t') || (line[i+1] == '\n') || (i == line.length())) {
-        if ((words.size() == 0) && (aux.find(":") == string::npos)) {
-          words.push_back("none:");
+        if ((wordsAux.size() == 0) && (aux.find(":") == string::npos)) {
+          wordsAux.push_back("none:");
         }
-        words.push_back(aux);
+        wordsAux.push_back(aux);
         aux = "";
         j=0;
       }
@@ -167,21 +167,36 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
       j++;
       i++;
     }
-    if (words.size() == 0) {
+    if (wordsAux.size() == 0) {
       break;
     }
-    if ((words.size() != 1) && (words[0].find(":") != string::npos)) { /*Caso só tenha a label ele junta com a outra linha*/
+    if ((wordsAux.size() != 1) && (wordsAux[0].find(":") != string::npos)) { /*Caso só tenha a label ele junta com a outra linha*/
       finish = 1;
     }
     else {
       getline(*inputfile, line);
       i=0;
-      size = words[0].length()-1;
-      words[0].erase(size, size);
+      size = wordsAux[0].length()-1;
+      wordsAux[0].erase(size, size);
     }
   }
 
-  for (i=0;i<words.size();i++) {
+  if (wordsAux.size() >= 2) {
+    words.push_back(wordsAux[0]);
+    words.push_back(wordsAux[1]);
+  }
+  for (i=2;i<wordsAux.size();i++) {
+    aux = wordsAux[i];
+    size = wordsAux[i].length()-1;
+    while ((wordsAux[i][size] != ',') && (i != wordsAux.size()-1)) {
+      aux = aux + " " + wordsAux[i+1];
+      i++;
+      size = wordsAux[i].length()-1;
+    }
+    words.push_back(aux);
+  }
+
+  for (i=0;i<words.size();i++) { /*retira virgulas e dois pontos*/
     size = words[i].length()-1;
     if ((words[i][size] == ':') || (words[i][size] == ',')) {
       words[i].erase(size, size);
@@ -204,12 +219,13 @@ void first_passage(char *argv[]) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
     words = separate_instructions(line, &inputfile);
 
-    for (i=0;i<words.size();i++) {
-      cout << words[i] << " ";
+    if (words.size() > 0) {
+      for (i=0;i<words.size();i++) {
+        cout << i << ": " << words[i] << endl;
+      }
+      cout << endl;
     }
-    cout << endl;
   }
-  
 }
 
 void second_passage() {
