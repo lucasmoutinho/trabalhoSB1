@@ -8,7 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
-#include <vector> 
+#include <vector>
 using namespace std;
 
 
@@ -19,8 +19,15 @@ Retorna um array de palavras, posições:
 2 - operador 1
 3 - operador 2
 */
-vector<string> separate_instructions(string line) {
+vector<string> separate_instructions(string line, ifstream *inputfile) {
   vector<string> words;
+  string aux;
+  int i=0;
+
+  while (i < line.length()) {
+
+  }
+
   words.push_back("");
 
   return words;
@@ -36,7 +43,7 @@ void first_passage(char *argv[]) {
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
-    separate_instructions(line);
+    separate_instructions(line, &inputfile);
   }
   
 }
