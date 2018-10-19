@@ -5,12 +5,130 @@
 // - LUCAS DA SILVA MOUTINHO - 15/0015747
 
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <fstream>
 #include <vector>
+#include <cstdlib>
+#include <string>
+
 using namespace std;
 
+vector<string> initialize_instructions_vector(){
+  vector<string> instructions;
+
+  instructions.push_back("ADD");
+  instructions.push_back("2");
+
+  instructions.push_back("SUB");
+  instructions.push_back("2");
+  
+  instructions.push_back("MULT");
+  instructions.push_back("2");
+  
+  instructions.push_back("DIV");
+  instructions.push_back("2");
+  
+  instructions.push_back("JMP");
+  instructions.push_back("2");
+  
+  instructions.push_back("JMPN");
+  instructions.push_back("2");
+  
+  instructions.push_back("JMPP");
+  instructions.push_back("2");
+  
+  instructions.push_back("JMPZ");
+  instructions.push_back("2");
+  
+  instructions.push_back("COPY");
+  instructions.push_back("3");
+  
+  instructions.push_back("LOAD");
+  instructions.push_back("2");
+  
+  instructions.push_back("STORE");
+  instructions.push_back("2");
+  
+  instructions.push_back("INPUT");
+  instructions.push_back("2");
+  
+  instructions.push_back("OUTPUT");
+  instructions.push_back("2");
+  
+  instructions.push_back("STOP");
+  instructions.push_back("1");
+
+  return instructions;
+}
+
+vector<string> initialize_directives_vector(){
+  vector<string> directives;
+
+  directives.push_back("SECTION");
+  directives.push_back("0");
+
+  directives.push_back("SPACE");
+  directives.push_back("1");
+
+  directives.push_back("CONST");
+  directives.push_back("1");
+
+  directives.push_back("PUBLIC");
+  directives.push_back("0");
+
+  directives.push_back("EQU");
+  directives.push_back("0");
+
+  directives.push_back("IF");
+  directives.push_back("0");
+
+  directives.push_back("EXTERN");
+  directives.push_back("0");
+
+  directives.push_back("BEGIN");
+  directives.push_back("0");
+
+  directives.push_back("END");
+  directives.push_back("0");
+
+
+  return directives;
+}
+
+
+/* Retorna o tamanho da instrução caso seja uma instrução. 
+Retorna -1 caso não seja uma instrução */
+int directive_length(string word){
+  int length = -1;
+  unsigned int i, directives_size;
+  vector<string> directives = initialize_directives_vector();
+
+  directives_size = (unsigned int)directives.size();
+  for(i = 0; i < directives_size; i=i+2){
+    if(word == directives[i]){
+      length = atoi(directives[i + 1].c_str());
+      break;
+    }
+  }
+  return length;
+}
+
+/* Retorna o tamanho da diretiva caso seja uma diretiva. 
+Retorna -1 caso não seja uma diretiva */
+int instruction_length(string word){
+  int length = -1;
+  unsigned int i, instructions_size;
+  vector<string> instructions = initialize_instructions_vector();
+
+  instructions_size = (unsigned int)instructions.size();
+  for(i = 0; i < instructions_size; i=i+2){
+    if(word == instructions[i]){
+      length = atoi(instructions[i + 1].c_str());
+      break;
+    }
+  }
+  return length;
+}
 
 /*
 Retorna um array de palavras, posições:
@@ -74,6 +192,7 @@ bool fexists(const string &filename){
 }
 
 int main(int argc, char *argv[]) {
+  
   if (correcet_execution(argc, argv[1])) {
     if (fexists(argv[1])) {
       first_passage(argv);
@@ -82,7 +201,6 @@ int main(int argc, char *argv[]) {
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
     }
-  }
 
   return 0;
 }
