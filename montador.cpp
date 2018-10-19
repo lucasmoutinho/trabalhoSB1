@@ -157,7 +157,7 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
 
       if ((line[i+1] == ' ') || (line[i+1] == '\t') || (line[i+1] == '\n') || (i == line.length())) {
         if ((words.size() == 0) && (aux.find(":") == string::npos)) {
-          words.push_back("label:");
+          words.push_back("none:");
         }
         words.push_back(aux);
         aux = "";
@@ -176,6 +176,8 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
     else {
       getline(*inputfile, line);
       i=0;
+      size = words[0].length()-1;
+      words[0].erase(size, size);
     }
   }
 
