@@ -140,14 +140,51 @@ Retorna um array de palavras, posições:
 vector<string> separate_instructions(string line, ifstream *inputfile) {
   vector<string> words;
   string aux;
-  int i=0;
+  unsigned int i=0, j=0, finish=0;
+  int size;
 
-  while (i < line.length()) {
+  while (finish == 0) {
+    while (i <= line.length()) { /*Le a linha toda*/
+      while (((line[i] == ' ') || (line[i] == '\t')) && (i < line.length())) { /*Remove espaços vazios*/
+        i++;
+      }
 
+      if (line[i] == ';') { /*Ignora comentarios*/
+        break;
+      }
+
+      aux = aux + line[i];
+
+      if ((line[i+1] == ' ') || (line[i+1] == '\t') || (line[i+1] == '\n') || (i == line.length())) {
+        if ((words.size() == 0) && (aux.find(":") == string::npos)) {
+          words.push_back("label:");
+        }
+        words.push_back(aux);
+        aux = "";
+        j=0;
+      }
+
+      j++;
+      i++;
+    }
+    if (words.size() == 0) {
+      break;
+    }
+    if ((words.size() != 1) && (words[0].find(":") != string::npos)) { /*Caso só tenha a label ele junta com a outra linha*/
+      finish = 1;
+    }
+    else {
+      getline(*inputfile, line);
+      i=0;
+    }
   }
 
-  words.push_back("");
-
+  for (i=0;i<words.size();i++) {
+    size = words[i].length()-1;
+    if ((words[i][size] == ':') || (words[i][size] == ',')) {
+      words[i].erase(size, size);
+    }
+  }
   return words;
 }
 
@@ -155,13 +192,20 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
 void first_passage(char *argv[]) {
   ifstream inputfile;
   int line_count=1, instruction_count=0;
-  string line, aux;
+  unsigned int i=0;
+  string line;
+  vector<string> words;
 
   inputfile.open(argv[1]); /*Abre o arquivo*/
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
-    separate_instructions(line, &inputfile);
+    words = separate_instructions(line, &inputfile);
+
+    for (i=0;i<words.size();i++) {
+      cout << words[i] << " ";
+    }
+    cout << endl;
   }
   
 }
