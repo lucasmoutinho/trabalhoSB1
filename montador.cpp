@@ -137,7 +137,7 @@ Retorna um array de palavras, posições:
 2 - operador 1
 3 - operador 2
 */
-vector<string> separate_instructions(string line, ifstream *inputfile) {
+vector<string> separate_instructions(string line, ifstream *inputfile, int *line_count) {
   vector<string> words, wordsAux;
   string aux;
   unsigned int i=0, j=0, finish=0;
@@ -176,6 +176,7 @@ vector<string> separate_instructions(string line, ifstream *inputfile) {
     else {
       getline(*inputfile, line);
       i=0;
+      *line_count = *line_count + 1;
       size = wordsAux[0].length()-1;
       wordsAux[0].erase(size, size);
     }
@@ -217,13 +218,14 @@ void first_passage(char *argv[]) {
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
-    words = separate_instructions(line, &inputfile);
-
+    words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
+
       for (i=0;i<words.size();i++) {
         cout << i << ": " << words[i] << endl;
       }
       cout << endl;
+
     }
   }
 }
