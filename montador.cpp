@@ -13,106 +13,141 @@
 
 using namespace std;
 
-vector<string> initialize_instructions_vector(){
-  vector<string> instructions;
+struct symbols {
+  string label;
+  int position_count;
+};
 
-  instructions.push_back("ADD");
-  instructions.push_back("2");
+struct instruction_length{
+  string instruction;
+  int length;
+};
 
-  instructions.push_back("SUB");
-  instructions.push_back("2");
-  
-  instructions.push_back("MULT");
-  instructions.push_back("2");
-  
-  instructions.push_back("DIV");
-  instructions.push_back("2");
-  
-  instructions.push_back("JMP");
-  instructions.push_back("2");
-  
-  instructions.push_back("JMPN");
-  instructions.push_back("2");
-  
-  instructions.push_back("JMPP");
-  instructions.push_back("2");
-  
-  instructions.push_back("JMPZ");
-  instructions.push_back("2");
-  
-  instructions.push_back("COPY");
-  instructions.push_back("3");
-  
-  instructions.push_back("LOAD");
-  instructions.push_back("2");
-  
-  instructions.push_back("STORE");
-  instructions.push_back("2");
-  
-  instructions.push_back("INPUT");
-  instructions.push_back("2");
-  
-  instructions.push_back("OUTPUT");
-  instructions.push_back("2");
-  
-  instructions.push_back("STOP");
-  instructions.push_back("1");
+struct directive_length{
+  string directive;
+  int length;
+};
 
-  return instructions;
+vector<symbols> symbols_table;
+vector<instruction_length> instructions_table;
+vector<directive_length> directives_table;
+
+void initialize_instructions_table(){
+  instruction_length new_instruction;
+
+  new_instruction.instruction = "ADD";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "SUB";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "MULT";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "DIV";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "JMP";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "JMPN";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "JMPP";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "JMPZ";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "COPY";
+  new_instruction.length = 3;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "LOAD";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "STORE";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "INPUT";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "OUTPUT";
+  new_instruction.length = 2;
+  instructions_table.push_back(new_instruction);
+ 
+  new_instruction.instruction = "STOP";
+  new_instruction.length = 1;
+  instructions_table.push_back(new_instruction);
+
 }
 
-vector<string> initialize_directives_vector(){
-  vector<string> directives;
+void initialize_directives_table(){
+  directive_length new_directive;
 
-  directives.push_back("SECTION");
-  directives.push_back("0");
+  new_directive.directive = "SECTION";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "SPACE";
+  new_directive.length = 1;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "CONST";
+  new_directive.length = 1;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "PUBLIC";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "EQU";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "IF";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "EXTERN";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "BEGIN";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
+ 
+  new_directive.directive = "END";
+  new_directive.length = 0;
+  directives_table.push_back(new_directive);
 
-  directives.push_back("SPACE");
-  directives.push_back("1");
-
-  directives.push_back("CONST");
-  directives.push_back("1");
-
-  directives.push_back("PUBLIC");
-  directives.push_back("0");
-
-  directives.push_back("EQU");
-  directives.push_back("0");
-
-  directives.push_back("IF");
-  directives.push_back("0");
-
-  directives.push_back("EXTERN");
-  directives.push_back("0");
-
-  directives.push_back("BEGIN");
-  directives.push_back("0");
-
-  directives.push_back("END");
-  directives.push_back("0");
-
-
-  return directives;
 }
-
 
 /* Retorna o tamanho da instrução caso seja uma instrução. 
 Retorna -1 caso não seja uma instrução */
-int directive_length(string word, string space_length){
+int get_directive_length(string word, string space_length){
   int length = -1;
   unsigned int i, directives_size;
-  vector<string> directives = initialize_directives_vector();
 
-  directives_size = (unsigned int)directives.size();
-  for(i = 0; i < directives_size; i=i+2){
-    if(word == directives[i]){
+  directives_size = (unsigned int)directives_table.size();
+  for(i = 0; i < directives_size; i++){
+    if(word == directives_table[i].directive){
       if(word == "SPACE" && !(space_length.empty())){
-        cout << "PRIMEIRO CASO" << endl;
         length = atoi(space_length.c_str());
       }
       else{
-        cout << "SEGUNDO CASO" << endl;
-        length = atoi(directives[i + 1].c_str());
+        length = directives_table[i].length;
       }
       break;
     }
@@ -124,27 +159,19 @@ int directive_length(string word, string space_length){
 Retorna o tamanho da diretiva caso seja uma diretiva. 
 Retorna -1 caso não seja uma diretiva 
 */
-int instruction_length(string word){
+int get_instruction_length(string word){
   int length = -1;
   unsigned int i, instructions_size;
-  vector<string> instructions = initialize_instructions_vector();
 
-  instructions_size = (unsigned int)instructions.size();
-  for(i = 0; i < instructions_size; i=i+2){
-    if(word == instructions[i]){
-      length = atoi(instructions[i + 1].c_str());
+  instructions_size = (unsigned int)instructions_table.size();
+  for(i = 0; i < instructions_size; i++){
+    if(word == instructions_table[i].instruction){
+      length = instructions_table[i].length;
       break;
     }
   }
   return length;
 }
-
-// /*
-// Insere o rótulo e o contador_posição na Tabela de Símbolos.
-// */
-// int insert_TS(string rot){
-
-// }
 
 
 /*
@@ -223,11 +250,80 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
   return words;
 }
 
+/* Print Instructions Table no terminal */
+void print_IT(){
+  unsigned int table_size = (unsigned int)instructions_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << instructions_table[i].instruction << endl;
+    cout << instructions_table[i].length << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
+/* Print Directives Table no terminal */
+void print_DT(){
+  unsigned int table_size = (unsigned int)directives_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << directives_table[i].directive << endl;
+    cout << directives_table[i].length << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
+
+/* Print Symbols Table no terminal */
+void print_TS(){
+  unsigned int table_size = (unsigned int)symbols_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << symbols_table[i].label << endl;
+    cout << symbols_table[i].position_count << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
+// Procura rótulo na Tabela de Símbolos. Se achou emite um erro de símbolo redefinido e retorna -1
+// Senão insere rótulo e position_count na TS e retorna 0
+int insert_label_TS(string label, int position_count){
+  unsigned int table_size = (unsigned int)symbols_table.size();
+  unsigned int i = 0;
+  bool found = false;
+
+  while (!(found) && i < table_size){
+    if(symbols_table[i].label == label){
+      found = true;
+    }
+    else{
+      i++;
+    }
+  }
+
+  if(found){
+    cout << "ERRO: Símbolo -" << symbols_table[i].label << "- está redefinido" << endl;
+    return -1;
+  }
+
+  symbols new_symbol;
+  new_symbol.label = label; 
+  new_symbol.position_count = position_count;
+
+  symbols_table.push_back(new_symbol); 
+
+  return 0;
+}
+
 /*Função de primeira passagem do montador*/
 void first_passage(char *argv[]) {
   ifstream inputfile;
-  int line_count=1, instruction_count=0;
-  unsigned int i=0;
+  int line_count=1, position_count=0, error = 0, length = 0;
   string line;
   vector<string> words;
 
@@ -237,9 +333,37 @@ void first_passage(char *argv[]) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
-      // CONSTRUIR CODIGO AQUI
+      if(words[0] != "none"){ //Rótulo existe
+        error = insert_label_TS(words[0],position_count);
+        if(error == -1){
+          break;
+        }
+      }
+      length = get_instruction_length(words[1]);
+      if(length != -1){
+        position_count = position_count + length;
+      }
+      else{
+        if(words.size() < 3){
+          length = get_directive_length(words[1], "");
+        }
+        else{
+          length = get_directive_length(words[1], words[2]);
+        }
+        if(length != -1){
+          // executa diretiva
+          position_count = position_count + length;
+        }
+        else{
+          error = -1;
+          cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
+          break; 
+        }
+      }
+      line_count++;
     }
   }
+  print_TS();
 }
 
 void second_passage() {
@@ -271,6 +395,8 @@ int main(int argc, char *argv[]) {
   
   if (correcet_execution(argc, argv[1])) {
     if (fexists(argv[1])) {
+      initialize_directives_table();
+      initialize_instructions_table();
       first_passage(argv);
       second_passage();
     }
