@@ -539,7 +539,25 @@ void first_passage(char *argv[]) {
   verify_text_section();
 }
 
-void second_passage() {
+void second_passage(char *argv[]) {
+  ifstream inputfile;
+  int line_count=1, position_count=0;
+  string line;
+  vector<string> words;
+
+  inputfile.open(argv[1]); /*Abre o arquivo*/
+
+  while (getline(inputfile, line)) {
+    transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
+    words = separate_instructions(line, &inputfile, &line_count);
+    if (words.size() > 0) {
+
+
+    }
+    else {
+      line_count++;
+    }
+  }
 }
 
 bool correcet_execution(int argc, string s) {
@@ -571,7 +589,7 @@ int main(int argc, char *argv[]) {
       initialize_directives_table();
       initialize_instructions_table();
       first_passage(argv);
-      second_passage();
+      second_passage(argv);
 
 
       print_TS();
