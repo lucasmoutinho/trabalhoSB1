@@ -30,9 +30,15 @@ struct directive_length{
   unsigned int number_operands;
 };
 
+struct section_length{
+  string section;
+  int position;
+};
+
 vector<symbols> symbols_table;
 vector<instruction_length> instructions_table;
 vector<directive_length> directives_table;
+vector<section_length> section_table;
 
 void initialize_instructions_table(){
   instruction_length new_instruction;
@@ -226,7 +232,7 @@ Retorna um array de palavras, posições:
 vector<string> separate_instructions(string line, ifstream *inputfile, int *line_count) {
   vector<string> words, wordsAux;
   string aux;
-  unsigned int i=0, j=0, finish=0;
+  unsigned int i=0, j=0, finish=0, rotCount=0;
   int size;
 
   while (finish == 0) {
@@ -292,9 +298,16 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
 
   for (i=0;i<words.size();i++) { /*retira virgulas e dois pontos*/
     size = words[i].length()-1;
+    if (words[i][size] == ':') {
+      rotCount++;
+    }
     if ((words[i][size] == ':') || (words[i][size] == ',')) {
       words[i].erase(size, size);
     }
+  }
+  if (rotCount >=2) {
+    cout << "ERROR: Dois rotulos para mesma instrução, linha: " << *line_count << endl;
+    exit(0);
   }
   return words;
 }
@@ -339,6 +352,18 @@ void print_TS(){
   cout << "-------------" << endl;
 }
 
+void print_section_table(){
+  unsigned int table_size = (unsigned int)section_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << section_table[i].section << endl;
+    cout << section_table[i].position << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
 // Procura rótulo na Tabela de Símbolos. Se achou emite um erro de símbolo redefinido e retorna -1
 // Senão insere rótulo e position_count na TS e retorna 0
 int insert_label_TS(string label, int position_count){
@@ -366,6 +391,52 @@ int insert_label_TS(string label, int position_count){
   symbols_table.push_back(new_symbol); 
 
   return 0;
+}
+
+void insert_section_table(vector<string> words, int position_count, int line_count) {
+  int flag=0;
+  section_length new_section;
+
+  if (words.size() == 3) {
+    if (words[1] == "SECTION") {
+      if (words[2] == "TEXT") {
+        flag++;
+        new_section.section = "TEXT";
+        new_section.position = position_count;
+      }
+      if (words[2] == "DATA") {
+        flag++;
+        new_section.section = "DATA";
+        new_section.position = position_count;
+      }
+      if (words[2] == "BSS") {
+        flag++;
+        new_section.section = "BSS";
+        new_section.position = position_count;
+      }
+      if (flag == 0) {
+        cout << "ERROR: SECTION não existente, linha: " << line_count << endl;
+        exit(0);
+      }
+      section_table.push_back(new_section);
+    }
+  }
+}
+
+void verify_text_section() {
+  unsigned int table_size = (unsigned int)section_table.size();
+  unsigned int i, flag=0;
+
+  for(i = 0; i < table_size; i++){
+    if (section_table[i].section == "TEXT") {
+      flag++;
+    }
+  }
+
+  if (flag == 0) {
+    cout << "ERROR, SECTION TEXT não encontrada!" << endl;
+    exit(0);
+  }
 }
 
 /*Função de primeira passagem do montador*/
@@ -404,6 +475,7 @@ void first_passage(char *argv[]) {
         }
         if(length != -1){
           // executa diretiva
+          insert_section_table(words, position_count, line_count);
           position_count = position_count + length;
         }
         else{
@@ -412,12 +484,15 @@ void first_passage(char *argv[]) {
         }
       }
       line_count++;
+
     }
     else {
       line_count++;
     }
   }
+  verify_text_section();
   print_TS();
+  print_section_table();
 }
 
 void second_passage() {
