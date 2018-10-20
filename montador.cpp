@@ -120,8 +120,10 @@ int directive_length(string word, string space_length){
   return length;
 }
 
-/* Retorna o tamanho da diretiva caso seja uma diretiva. 
-Retorna -1 caso não seja uma diretiva */
+/* 
+Retorna o tamanho da diretiva caso seja uma diretiva. 
+Retorna -1 caso não seja uma diretiva 
+*/
 int instruction_length(string word){
   int length = -1;
   unsigned int i, instructions_size;
@@ -136,6 +138,14 @@ int instruction_length(string word){
   }
   return length;
 }
+
+// /*
+// Insere o rótulo e o contador_posição na Tabela de Símbolos.
+// */
+// int insert_TS(string rot){
+
+// }
+
 
 /*
 Retorna um array de palavras, posições:
@@ -227,12 +237,7 @@ void first_passage(char *argv[]) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
-
-      for (i=0;i<words.size();i++) {
-        cout << i << ": " << words[i] << endl;
-      }
-      cout << endl;
-
+      // CONSTRUIR CODIGO AQUI
     }
   }
 }
@@ -273,6 +278,6 @@ int main(int argc, char *argv[]) {
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
     }
   }
-  
+
   return 0;
 }
