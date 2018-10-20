@@ -21,11 +21,13 @@ struct symbols {
 struct instruction_length{
   string instruction;
   int length;
+  unsigned int number_operands;
 };
 
 struct directive_length{
   string directive;
   int length;
+  unsigned int number_operands;
 };
 
 vector<symbols> symbols_table;
@@ -37,58 +39,72 @@ void initialize_instructions_table(){
 
   new_instruction.instruction = "ADD";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "SUB";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "MULT";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "DIV";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMP";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPN";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPP";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPZ";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "COPY";
   new_instruction.length = 3;
+  new_instruction.number_operands = 2;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "LOAD";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "STORE";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "INPUT";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "OUTPUT";
   new_instruction.length = 2;
+  new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "STOP";
   new_instruction.length = 1;
+  new_instruction.number_operands = 0;
   instructions_table.push_back(new_instruction);
 
 }
@@ -98,55 +114,77 @@ void initialize_directives_table(){
 
   new_directive.directive = "SECTION";
   new_directive.length = 0;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "SPACE";
   new_directive.length = 1;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "CONST";
   new_directive.length = 1;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "PUBLIC";
   new_directive.length = 0;
+  new_directive.number_operands = 0;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "EQU";
   new_directive.length = 0;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "IF";
   new_directive.length = 0;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "EXTERN";
   new_directive.length = 0;
+  new_directive.number_operands = 0;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "BEGIN";
   new_directive.length = 0;
+  new_directive.number_operands = 0;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "END";
   new_directive.length = 0;
+  new_directive.number_operands = 0;
   directives_table.push_back(new_directive);
 
 }
 
 /* Retorna o tamanho da instrução caso seja uma instrução. 
 Retorna -1 caso não seja uma instrução */
-int get_directive_length(string word, string space_length){
+int get_directive_length(string word, unsigned int number_operands, int line_count, string space_length = ""){
   int length = -1;
   unsigned int i, directives_size;
 
   directives_size = (unsigned int)directives_table.size();
   for(i = 0; i < directives_size; i++){
     if(word == directives_table[i].directive){
-      if(word == "SPACE" && !(space_length.empty())){
-        length = atoi(space_length.c_str());
+      if(word == "SPACE"){
+        if (!(space_length.empty()) && number_operands == instructions_table[i].number_operands){
+          length = atoi(space_length.c_str());
+        }
+        else if (space_length.empty() && number_operands == 0){
+          length = directives_table[i].length;
+        }
+        else{
+          cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+          exit(0);
+        }
       }
       else{
+        if(number_operands != instructions_table[i].number_operands){
+          cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+          exit(0);
+        }
         length = directives_table[i].length;
       }
       break;
@@ -159,13 +197,17 @@ int get_directive_length(string word, string space_length){
 Retorna o tamanho da diretiva caso seja uma diretiva. 
 Retorna -1 caso não seja uma diretiva 
 */
-int get_instruction_length(string word){
+int get_instruction_length(string word, unsigned int number_operands, int line_count){
   int length = -1;
   unsigned int i, instructions_size;
 
   instructions_size = (unsigned int)instructions_table.size();
   for(i = 0; i < instructions_size; i++){
     if(word == instructions_table[i].instruction){
+      if(number_operands != instructions_table[i].number_operands){
+        cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+        exit(0);
+      }
       length = instructions_table[i].length;
       break;
     }
@@ -330,6 +372,7 @@ int insert_label_TS(string label, int position_count){
 void first_passage(char *argv[]) {
   ifstream inputfile;
   int line_count=1, position_count=0, error = 0, length = 0;
+  unsigned int number_operands;
   string line;
   vector<string> words;
 
@@ -347,16 +390,17 @@ void first_passage(char *argv[]) {
           exit(0);
         }
       }
-      length = get_instruction_length(words[1]);
+      number_operands = (unsigned int)words.size() - 2;
+      length = get_instruction_length(words[1], number_operands, line_count);
       if(length != -1){
         position_count = position_count + length;
       }
       else{
-        if(words.size() < 3){
-          length = get_directive_length(words[1], "");
+        if(!(number_operands)){
+          length = get_directive_length(words[1], number_operands, line_count);
         }
         else{
-          length = get_directive_length(words[1], words[2]);
+          length = get_directive_length(words[1], number_operands, line_count, words[2]);
         }
         if(length != -1){
           // executa diretiva
