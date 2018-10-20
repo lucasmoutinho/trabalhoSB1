@@ -487,17 +487,33 @@ void verify_text_section() {
 /*Função de primeira passagem do montador*/
 void first_passage(char *argv[]) {
   ifstream inputfile;
+  ofstream outputfile;
   int line_count=1, position_count=0, error = 0, length = 0;
   unsigned int number_operands;
-  string line;
+  string line, prefile;
   vector<string> words;
 
+  prefile = argv[1];
+  prefile = prefile.erase(prefile.length()-4, prefile.length()-1) + ".pre";
+
+  outputfile.open(prefile.c_str());
   inputfile.open(argv[1]); /*Abre o arquivo*/
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
+
+      if (words[0] != "none") {
+        outputfile << words[0] << ": ";
+      }
+      outputfile << words[1] << " ";
+      if (words.size() == 3) {
+        outputfile << words[2] << endl;
+      }
+      if (words.size() == 4) {
+        outputfile << words[2] << ", " << words[3] << endl;
+      }
 
       if(words[0] != "none"){ //Rótulo existe
         error = insert_label_TS(words[0],position_count);
@@ -541,10 +557,15 @@ void first_passage(char *argv[]) {
 
 void second_passage(char *argv[]) {
   ifstream inputfile;
+  ofstream outputfile;
   int line_count=1, position_count=0;
-  string line;
+  string line, ofile;
   vector<string> words;
 
+  ofile = argv[1];
+  ofile = ofile.erase(ofile.length()-4, ofile.length()-1) + ".o";
+
+  outputfile.open(ofile.c_str());
   inputfile.open(argv[1]); /*Abre o arquivo*/
 
   while (getline(inputfile, line)) {
