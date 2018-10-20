@@ -149,7 +149,12 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
         i++;
       }
 
+
       if (line[i] == ';') { /*Ignora comentarios*/
+        break;
+      }
+
+      if ((line[i] == '\0') && (aux == "")) { /*Ignora comentarios*/
         break;
       }
 
@@ -176,9 +181,8 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
     else {
       getline(*inputfile, line);
       i=0;
+      j=0;
       *line_count = *line_count + 1;
-      size = wordsAux[0].length()-1;
-      wordsAux[0].erase(size, size);
     }
   }
 

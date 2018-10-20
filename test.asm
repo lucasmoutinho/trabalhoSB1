@@ -1,10 +1,18 @@
-SECTION TEXT
-ROT:    INPUT       N1
+SECTION TEXT    
+ROT:    INPUT       N1 
       COPY N1, N4 ;comentario qualquer
-ROT2:
-      COPY N2, N3
-COPY N3, N3 + 1
+ROT2: 
+
+
+
+
+			       COPY N2, N3 
+COPY N3, N3 + 1 
+
+
 OUTPUT N3 + 1
+
+
 STOP
 ;comentario qualuer
 SECTIO DATA
