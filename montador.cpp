@@ -176,13 +176,13 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
           length = directives_table[i].length;
         }
         else{
-          cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+          cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
           exit(0);
         }
       }
       else{
         if(number_operands != instructions_table[i].number_operands){
-          cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+          cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
           exit(0);
         }
         length = directives_table[i].length;
