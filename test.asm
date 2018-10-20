@@ -12,7 +12,6 @@ COPY N3, N3 + 1
 
 OUTPUT N3 + 1
 
-ROT:    INPUT       N1 
 STOP
 ;comentario qualuer
 SECTION DATA
