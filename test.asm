@@ -5,7 +5,6 @@ ROT2:
 
 
 
-
 			       COPY N2, N3 
 COPY N3, N3 + 1 
 
@@ -15,7 +14,7 @@ OUTPUT N3 + 1
 STOP
 
 ;comentario qualuer
-SECTION DATA
+SECTION DATA 
 N2: CONST -5
 SECTION BSS
 N1: SPACE
