@@ -46,6 +46,7 @@ vector<instruction_length> instructions_table;
 vector<directive_length> directives_table;
 vector<section_length> section_table;
 vector<const_struct> const_table;
+vector<int> relative_vec;
 
 void initialize_instructions_table(){
   instruction_length new_instruction;
@@ -384,6 +385,18 @@ void print_const_table() {
   cout << "-------------" << endl;
 }
 
+void print_relative() {
+  unsigned int table_size = (unsigned int)relative_vec.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << relative_vec[i] << " ";
+  }
+  cout << endl;
+  cout << "-------------" << endl;
+}
+
 // Procura rótulo na Tabela de Símbolos. Se achou emite um erro de símbolo redefinido e retorna -1
 // Senão insere rótulo e position_count na TS e retorna 0
 int insert_label_TS(string label, int position_count){
@@ -484,6 +497,30 @@ void verify_text_section() {
   }
 }
 
+/*Cria o vetor de relativos*/
+void insert_relative(vector<string> words, int line_count) {
+  int size_elem=words.size()-2, flag, i, num;
+  flag = get_instruction_length(words[1], size_elem, line_count);
+  if (flag != -1) {
+    if (relative_vec.size() > 0) {
+      num = relative_vec[relative_vec.size()-1];
+      num++;
+      for (i=0;i<size_elem;i++) {
+        num++;
+        relative_vec.push_back(num);
+      }
+    }
+    else if (size_elem == 1) {
+      relative_vec.push_back(1);
+    }
+    else if (size_elem == 2) {
+      relative_vec.push_back(1);
+      relative_vec.push_back(2);
+    }
+  }
+
+}
+
 /*Função de primeira passagem do montador*/
 void first_passage(char *argv[]) {
   ifstream inputfile;
@@ -508,12 +545,17 @@ void first_passage(char *argv[]) {
         outputfile << words[0] << ": ";
       }
       outputfile << words[1] << " ";
+      if (words.size() == 2) {
+        outputfile << endl;
+      }
       if (words.size() == 3) {
         outputfile << words[2] << endl;
       }
       if (words.size() == 4) {
         outputfile << words[2] << ", " << words[3] << endl;
       }
+
+      insert_relative(words, line_count);
 
       if(words[0] != "none"){ //Rótulo existe
         error = insert_label_TS(words[0],position_count);
@@ -616,6 +658,7 @@ int main(int argc, char *argv[]) {
       print_TS();
       print_section_table();
       print_const_table();
+      print_relative();
     }
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
