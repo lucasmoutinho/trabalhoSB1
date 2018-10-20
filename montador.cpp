@@ -208,6 +208,9 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
         if ((wordsAux.size() == 0) && (aux.find(":") == string::npos)) {
           wordsAux.push_back("none:");
         }
+        if (aux[aux.length()-1] == '\0') {
+          aux.erase(aux.length()-1, aux.length()-1);
+        }
         wordsAux.push_back(aux);
         aux = "";
         j=0;

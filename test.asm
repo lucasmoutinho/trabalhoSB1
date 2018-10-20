@@ -13,6 +13,7 @@ COPY N3, N3 + 1
 OUTPUT N3 + 1
 
 STOP
+
 ;comentario qualuer
 SECTION DATA
 N2: CONST -5
