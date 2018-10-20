@@ -98,7 +98,7 @@ vector<string> initialize_directives_vector(){
 
 /* Retorna o tamanho da instrução caso seja uma instrução. 
 Retorna -1 caso não seja uma instrução */
-int directive_length(string word){
+int directive_length(string word, string space_length){
   int length = -1;
   unsigned int i, directives_size;
   vector<string> directives = initialize_directives_vector();
@@ -106,7 +106,14 @@ int directive_length(string word){
   directives_size = (unsigned int)directives.size();
   for(i = 0; i < directives_size; i=i+2){
     if(word == directives[i]){
-      length = atoi(directives[i + 1].c_str());
+      if(word == "SPACE" && !(space_length.empty())){
+        cout << "PRIMEIRO CASO" << endl;
+        length = atoi(space_length.c_str());
+      }
+      else{
+        cout << "SEGUNDO CASO" << endl;
+        length = atoi(directives[i + 1].c_str());
+      }
       break;
     }
   }
@@ -270,6 +277,6 @@ int main(int argc, char *argv[]) {
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
     }
   }
-
+  
   return 0;
 }
