@@ -35,10 +35,17 @@ struct section_length{
   int position;
 };
 
+struct const_struct {
+  string label;
+  int position_count;
+  int value;
+};
+
 vector<symbols> symbols_table;
 vector<instruction_length> instructions_table;
 vector<directive_length> directives_table;
 vector<section_length> section_table;
+vector<const_struct> const_table;
 
 void initialize_instructions_table(){
   instruction_length new_instruction;
@@ -352,7 +359,7 @@ void print_TS(){
   cout << "-------------" << endl;
 }
 
-void print_section_table(){
+void print_section_table() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i;
 
@@ -360,6 +367,19 @@ void print_section_table(){
   for(i = 0; i < table_size; i++){
     cout << section_table[i].section << endl;
     cout << section_table[i].position << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
+void print_const_table() {
+  unsigned int table_size = (unsigned int)const_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << const_table[i].label << endl;
+    cout << const_table[i].position_count << endl;
+    cout << const_table[i].value << endl << endl;
   }
   cout << "-------------" << endl;
 }
@@ -423,6 +443,27 @@ void insert_section_table(vector<string> words, int position_count, int line_cou
   }
 }
 
+void insert_const_table(vector<string> words, int position_count) {
+  const_struct new_const;
+
+  if (words.size() == 3) {
+    if (words[1] == "CONST") {
+      new_const.label = words[0];
+      new_const.position_count = position_count;
+
+      if (words[2].find("0X") != string::npos) {
+        new_const.value = (int)strtol(words[2].c_str(), 0, 16);
+      }
+      else {
+        new_const.value = atoi(words[2].c_str());
+      }
+
+
+      const_table.push_back(new_const);
+    }
+  }
+}
+
 void verify_text_section() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i, flag=0;
@@ -435,6 +476,10 @@ void verify_text_section() {
 
   if (flag == 0) {
     cout << "ERROR, SECTION TEXT não encontrada!" << endl;
+    exit(0);
+  }
+  if (section_table[0].section != "TEXT") {
+    cout << "ERROR, SECTION TEXT deve ser a primeira!" << endl;
     exit(0);
   }
 }
@@ -476,6 +521,7 @@ void first_passage(char *argv[]) {
         if(length != -1){
           // executa diretiva
           insert_section_table(words, position_count, line_count);
+          insert_const_table(words, position_count);
           position_count = position_count + length;
         }
         else{
@@ -491,8 +537,6 @@ void first_passage(char *argv[]) {
     }
   }
   verify_text_section();
-  print_TS();
-  print_section_table();
 }
 
 void second_passage() {
@@ -528,6 +572,11 @@ int main(int argc, char *argv[]) {
       initialize_instructions_table();
       first_passage(argv);
       second_passage();
+
+
+      print_TS();
+      print_section_table();
+      print_const_table();
     }
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
