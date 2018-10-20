@@ -12,10 +12,10 @@ COPY N3, N3 + 1
 
 OUTPUT N3 + 1
 
-
+ROT:    INPUT       N1 
 STOP
 ;comentario qualuer
-SECTIO DATA
+SECTION DATA
 N2: CONST -5
 SECTION BSS
 N1: SPACE

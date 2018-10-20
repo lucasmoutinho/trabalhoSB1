@@ -311,7 +311,6 @@ int insert_label_TS(string label, int position_count){
   }
 
   if(found){
-    cout << "ERRO: Símbolo -" << symbols_table[i].label << "- está redefinido" << endl;
     return -1;
   }
 
@@ -337,10 +336,12 @@ void first_passage(char *argv[]) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
+
       if(words[0] != "none"){ //Rótulo existe
         error = insert_label_TS(words[0],position_count);
         if(error == -1){
-          break;
+          cout << "ERROR: Simbolo redefinido na linha: " << line_count << endl;
+          exit(0);
         }
       }
       length = get_instruction_length(words[1]);
@@ -359,11 +360,13 @@ void first_passage(char *argv[]) {
           position_count = position_count + length;
         }
         else{
-          error = -1;
           cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
-          break; 
+          exit(0); 
         }
       }
+      line_count++;
+    }
+    else {
       line_count++;
     }
   }
