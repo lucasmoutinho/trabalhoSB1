@@ -1000,15 +1000,15 @@ void second_passage(char *argv[]) {
 bool correcet_execution(int argc, string s) {
   bool correct=true;
   if (argc != 2) {
-    cout << "Numero de argumentos errados!" << endl;
+    cout << "ERROR: Numero de argumentos errados! Apenas um arquivo de entrada é permitido por execução" << endl;
     correct = false;
   }
   if (s.length() <= 4) {
-    cout << "Arquivo fora de formato!" << endl;
+    cout << "ERROR: Arquivo de entrada com formato incorreto! Deve possuir extensão *.asm" << endl;
     correct = false;
   }
   else if (s.find(".asm") == string::npos) {
-    cout << "Arquivo fora de formato!" << endl;
+    cout << "ERROR: Arquivo de entrada com formato incorreto! Deve possuir extensão *.asm" << endl;
     correct = false;
   }
   return correct;
@@ -1020,24 +1020,28 @@ bool fexists(const string &filename){
 }
 
 int main(int argc, char *argv[]) {
-  
-  if (correcet_execution(argc, argv[1])) {
-    if (fexists(argv[1])) {
-      initialize_directives_table();
-      initialize_instructions_table();
-      first_passage(argv);
-      second_passage(argv);
+  if(argc != 1){
+    if (correcet_execution(argc, argv[1])) {
+      if (fexists(argv[1])) {
+        initialize_directives_table();
+        initialize_instructions_table();
+        first_passage(argv);
+        second_passage(argv);
 
 
-      print_TS();
-      print_section_table();
-      print_const_table();
-      print_relative();
-      print_code();
+        print_TS();
+        print_section_table();
+        print_const_table();
+        print_relative();
+        print_code();
+      }
+      else{
+        cout << "ERROR: O Arquivo "<< argv[1] <<" não existe" << endl;
+      }
     }
-    else{
-      cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
-    }
+  }
+  else{
+    cout << "ERROR: Número de argumentos não pode ser vazio. Por favor insira o nome de um arquivo de entrada na linha de comando" << endl;
   }
 
   return 0;
