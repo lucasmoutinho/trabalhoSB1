@@ -597,12 +597,52 @@ void first_passage(char *argv[]) {
   verify_text_section();
 }
 
+void check_section_instruction_errors(vector<string> words, int position_count, int line_count) {
+  int isntruction = get_instruction_length(words[1], words.size()-2, line_count);
+
+  if (isntruction != -1) {
+    if ((position_count < section_table[0].position) || (position_count > section_table[1].position)) {
+      cout << "ERROR: Instrução fora da sessão TEXT! Linha: " << line_count << endl;
+      exit(0);
+    }
+  }
+  else {
+    if ((position_count > section_table[0].position) && (position_count <= section_table[1].position) && (words[1] != "SECTION")) {
+      cout << "ERROR: Diretiva na sessão TEXT! Linha: " << line_count << endl;
+      exit(0);
+    }
+    if (section_table.size() == 3) {
+      if (section_table[1].section == "DATA") {
+        if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "CONST")) {
+          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          exit(0);
+        }
+        if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "SPACE")) {
+          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          exit(0);
+        }
+      }
+      if (section_table[1].section == "BSS") {
+        if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "SPACE")) {
+          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          exit(0);
+        }
+         if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "CONST")) {
+          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          exit(0);
+        }
+      }
+    }
+  }
+}
+
 void second_passage(char *argv[]) {
   ifstream inputfile;
   ofstream outputfile;
-  int line_count=1, position_count=0;
+  int line_count=1, position_count=0, length;
   string line, ofile;
   vector<string> words;
+  unsigned int number_operands;
 
   ofile = argv[1];
   ofile = ofile.erase(ofile.length()-4, ofile.length()-1) + ".o";
@@ -615,6 +655,28 @@ void second_passage(char *argv[]) {
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
 
+      number_operands = (unsigned int)words.size() - 2;
+      length = get_instruction_length(words[1], number_operands, line_count);
+      if(length != -1){
+        position_count = position_count + length;
+      }
+      else{
+        if(!(number_operands)){
+          length = get_directive_length(words[1], number_operands, line_count);
+        }
+        else{
+          length = get_directive_length(words[1], number_operands, line_count, words[2]);
+        }
+        if(length != -1){
+          position_count = position_count + length;
+        }
+        else{
+          cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
+          exit(0); 
+        }
+      }
+      check_section_instruction_errors(words, position_count, line_count);
+      line_count++;
 
     }
     else {
