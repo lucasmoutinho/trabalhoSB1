@@ -21,6 +21,7 @@ struct symbols {
 struct instruction_length{
   string instruction;
   int length;
+  int opcode;
   unsigned int number_operands;
 };
 
@@ -47,77 +48,92 @@ vector<directive_length> directives_table;
 vector<section_length> section_table;
 vector<const_struct> const_table;
 vector<int> relative_vec;
+vector<int> code_vec;
 
 void initialize_instructions_table(){
   instruction_length new_instruction;
 
   new_instruction.instruction = "ADD";
   new_instruction.length = 2;
+  new_instruction.opcode = 1;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "SUB";
   new_instruction.length = 2;
+  new_instruction.opcode = 2;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "MULT";
   new_instruction.length = 2;
+  new_instruction.opcode = 3;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "DIV";
   new_instruction.length = 2;
+  new_instruction.opcode = 4;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMP";
   new_instruction.length = 2;
+  new_instruction.opcode = 5;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPN";
   new_instruction.length = 2;
+  new_instruction.opcode = 6;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPP";
   new_instruction.length = 2;
+  new_instruction.opcode = 7;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "JMPZ";
   new_instruction.length = 2;
+  new_instruction.opcode = 8;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "COPY";
   new_instruction.length = 3;
+  new_instruction.opcode = 9;
   new_instruction.number_operands = 2;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "LOAD";
   new_instruction.length = 2;
+  new_instruction.opcode = 10;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "STORE";
   new_instruction.length = 2;
+  new_instruction.opcode = 11;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "INPUT";
   new_instruction.length = 2;
+  new_instruction.opcode = 12;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "OUTPUT";
   new_instruction.length = 2;
+  new_instruction.opcode = 13;
   new_instruction.number_operands = 1;
   instructions_table.push_back(new_instruction);
  
   new_instruction.instruction = "STOP";
   new_instruction.length = 1;
+  new_instruction.opcode = 14;
   new_instruction.number_operands = 0;
   instructions_table.push_back(new_instruction);
 
@@ -173,8 +189,10 @@ void initialize_directives_table(){
 
 }
 
-/* Retorna o tamanho da instrução caso seja uma instrução. 
-Retorna -1 caso não seja uma instrução */
+/* 
+Retorna o tamanho da diretiva caso seja uma diretiva. 
+Retorna -1 caso não seja uma diretiva 
+*/
 int get_directive_length(string word, unsigned int number_operands, int line_count, string space_length = ""){
   int length = -1;
   unsigned int i, directives_size;
@@ -207,10 +225,8 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
   return length;
 }
 
-/* 
-Retorna o tamanho da diretiva caso seja uma diretiva. 
-Retorna -1 caso não seja uma diretiva 
-*/
+/* Retorna o tamanho da instrução caso seja uma instrução. 
+Retorna -1 caso não seja uma instrução */
 int get_instruction_length(string word, unsigned int number_operands, int line_count){
   int length = -1;
   unsigned int i, instructions_size;
@@ -229,6 +245,44 @@ int get_instruction_length(string word, unsigned int number_operands, int line_c
   return length;
 }
 
+/* 
+Retorna o opcode da instrução caso seja uma instrução. 
+Se o opcode não é encontrado, emite um erro 
+*/
+int get_instruction_opcode(string word){
+  int opcode = -1;
+  unsigned int i, instructions_size;
+
+  instructions_size = (unsigned int)instructions_table.size();
+  for(i = 0; i < instructions_size; i++){
+    if(word == instructions_table[i].instruction){
+      opcode = instructions_table[i].opcode;
+      break;
+    }
+  }
+  if(opcode == -1){
+    cout << "ERROR: Não encontrado o Opcode da instrução " << word << endl;
+  }
+  return opcode;
+}
+
+/* 
+Retorna o valor do símbolo, este que é o position_count.
+Retorna -1 caso o símbolo não tenha sido encontrado.
+*/
+int get_symbol_value(string word){
+  int position_count = -1;
+  unsigned int i, ts_size;
+
+  ts_size = (unsigned int)symbols_table.size();
+  for(i = 0; i < ts_size; i++){
+    if(word == symbols_table[i].label){
+      position_count = symbols_table[i].position_count;
+      break;
+    }
+  }
+  return position_count;
+}
 
 /*
 Retorna um array de palavras, posições:
@@ -385,6 +439,7 @@ void print_const_table() {
   cout << "-------------" << endl;
 }
 
+// Imprime na tela o vetor de símbolos relativos
 void print_relative() {
   unsigned int table_size = (unsigned int)relative_vec.size();
   unsigned int i;
@@ -392,6 +447,20 @@ void print_relative() {
   cout << "-------------" << endl;
   for(i = 0; i < table_size; i++){
     cout << relative_vec[i] << " ";
+  }
+  cout << endl;
+  cout << "-------------" << endl;
+}
+
+
+// Imprime na tela o vetor code com os opcodes e os valores dos operandos
+void print_code() {
+  unsigned int code_size = (unsigned int)code_vec.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < code_size; i++){
+    cout << code_vec[i] << " ";
   }
   cout << endl;
   cout << "-------------" << endl;
@@ -772,6 +841,64 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
   }
 }
 
+void separate_expression(string expression, string *aux1, string *aux2){
+  int i = 0;
+  while (expression[i] != ' '){
+    *aux1 = *aux1 + expression[i];
+    i++;
+  }
+  i = i + 3;
+  while (i < (int)expression.size()){
+    *aux2 = *aux2 + expression[i];
+    i++;
+  }
+}
+
+void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count){
+  int value;
+  string label, second_label;
+
+  code_vec.push_back(get_instruction_opcode(words[1]));
+  if(number_operands == 1){
+    label = words[2];
+    if((label.find(" + ") != string::npos)){
+      string aux1 = "", aux2 = "";
+      separate_expression(label,&aux1,&aux2);
+      value = get_symbol_value(aux1) + atoi(aux2.c_str());
+    }
+    else{
+      value = get_symbol_value(label);
+    }
+    code_vec.push_back(value);
+  }
+  else if(number_operands == 2){
+    label = words[2];
+    second_label = words[3];
+    if((label.find(" + ") != string::npos)){
+      string aux1 = "", aux2 = "";
+      separate_expression(label,&aux1,&aux2);
+      value = get_symbol_value(aux1) + atoi(aux2.c_str());
+    }
+    else{
+      value = get_symbol_value(label);
+    }
+    code_vec.push_back(value);
+    if((second_label.find(" + ") != string::npos)){
+      string aux3 = "", aux4 = "";
+      separate_expression(second_label,&aux3,&aux4);
+      value = get_symbol_value(aux3) + atoi(aux4.c_str());
+    }
+    else{
+      value = get_symbol_value(second_label);
+    }
+    code_vec.push_back(value);
+  }
+  else if(number_operands != 0){
+    cout << "ERROR: Número de operandos inálidos na linha: " << line_count << endl;
+    exit(0);
+  }
+}
+
 void second_passage(char *argv[]) {
   ifstream inputfile;
   ofstream outputfile;
@@ -796,6 +923,7 @@ void second_passage(char *argv[]) {
       length = get_instruction_length(words[1], number_operands, line_count);
       if(length != -1){
         position_count = position_count + length;
+        insert_code_vec(words, number_operands, line_count);
       }
       else{
         if(!(number_operands)){
@@ -814,7 +942,6 @@ void second_passage(char *argv[]) {
       }
       check_section_instruction_errors(words, position_count, line_count);
       line_count++;
-
     }
     else {
       line_count++;
@@ -858,6 +985,7 @@ int main(int argc, char *argv[]) {
       print_section_table();
       print_const_table();
       print_relative();
+      print_code();
     }
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
