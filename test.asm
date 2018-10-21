@@ -4,17 +4,17 @@ MOD_B: EXTERN
 PUBLIC N1
 PUBLIC N3
 SECTION TEXT    
-ROT:    INPUT       N1 
+ROT:    INPUT       MOD_B 
       COPY N1, N4 ;comentario qualquer
 ROT2: 
 
 
 
 			       COPY N2, N3 
-COPY N3, N3 + 1 
+COPY N3, R + 1 
 
 
-OUTPUT N3 + 1
+OUTPUT R + 1
 
 STOP
 

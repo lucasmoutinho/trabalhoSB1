@@ -53,7 +53,7 @@ struct const_struct {
   int value;
 };
 
-vector<symbols> symbols_table; /*Tabela de simbolos*/
+vector<symbols> symbols_table; /*Tabela de símbolos*/
 vector<definition> definitions_table; /*Tabela de Definições*/
 vector<use> use_table; /*Tabela de Uso*/
 vector<instruction_length> instructions_table; /*Tabela de instruções*/
@@ -308,6 +308,25 @@ int get_symbol_value(string word){
 }
 
 /* 
+Retorna se o símbolo é um extern ou não
+*/
+bool is_symbol_extern(string word){
+  bool value = false;
+  unsigned int i, ts_size;
+
+  ts_size = (unsigned int)symbols_table.size();
+  for(i = 0; i < ts_size; i++){
+    if(word == symbols_table[i].label){
+      if(symbols_table[i].extern_value){
+        value = true;
+      }
+      break;
+    }
+  }
+  return value;
+}
+
+/* 
 Retorna o valor do const identificado na tabela pelo símbolo.
 Retorna -1 caso o símbolo não tenha sido encontrado.
 */
@@ -468,6 +487,19 @@ void print_deftable(){
   cout << "-------------" << endl;
 }
 
+/* Print Use Table no terminal */
+void print_usetable(){
+  unsigned int table_size = (unsigned int)use_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << use_table[i].label << endl;
+    cout << use_table[i].position_count << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
 void print_section_table() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i;
@@ -617,6 +649,13 @@ void insert_definitions_table(vector<string> words) {
   }
 }
 
+void insert_use_table(string symbol, int position_count) {
+  use new_use;
+  new_use.label = symbol;
+  new_use.position_count = position_count;
+  use_table.push_back(new_use);
+}
+
 void verify_text_section() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i, flag=0;
@@ -699,14 +738,14 @@ void first_passage() {
       insert_relative(words, line_count);
 
       if(words[0] != "none"){ //Rótulo existe
-        if(words[1] == "EXTERN"){
+        if(words[1] == "EXTERN"){ // Se for um extern
           error = insert_label_TS(words[0],position_count, true);
         }
-        else{
+        else{ // Se nao for um extern
           error = insert_label_TS(words[0], position_count);
         }
         if(error == -1){
-          cout << "ERROR: Simbolo redefinido na linha: " << line_count << endl;
+          cout << "ERROR: Símbolo redefinido na linha: " << line_count << endl;
           error = true;
         }
       }
@@ -758,11 +797,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Simbolo de salto não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR: Símbolo de salto não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num < section_table[0].position) || (num > section_table[1].position-1)) {
-      cout << "ERROR: Label de salto fora da sessão TEXT! Linha: " << line_count << endl;
+      cout << "ERROR: Label de salto fora da seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -783,12 +822,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
         }
       }
       if (space_count > 2) {
-        cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+        cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
         error = true;
       }
     }
     else {
-      cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+      cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
       error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
@@ -797,11 +836,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR: Símbolo não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
+      cout << "ERROR: Operando na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -816,7 +855,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     else if (words[3].find(" + ") != string::npos) {
       i=0;
       while (words[3][i] != ' ') {
-        aux = aux + words[2][i];
+        aux = aux + words[3][i];
         i++;
       }
       for (i=0;i<words[3].length();i++) {
@@ -825,12 +864,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
         }
       }
       if (space_count > 2) {
-        cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+        cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
         error = true;
       }
     }
     else {
-      cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+      cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
       error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
@@ -839,11 +878,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR: Símbolo não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
+      cout << "ERROR: Operando na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -868,7 +907,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
 
 }
 
-/*Verifica se alguma expreção foi colocada na sessão errada*/
+/*Verifica se alguma expressão foi colocada na seção errada*/
 void check_section_instruction_errors(vector<string> words, int position_count, int line_count) {
   int isntruction = get_instruction_length(words[1], words.size()-2, line_count);
   int diretive;
@@ -885,33 +924,33 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
 
   if (isntruction != -1) {
     if ((position_count < section_table[0].position) || (position_count > section_table[1].position)) {
-      cout << "ERROR: Instrução fora da sessão TEXT! Linha: " << line_count << endl;
+      cout << "ERROR: Instrução fora da seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
   else if (diretive != -1) {
     if ((position_count > section_table[0].position) && (position_count <= section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Diretiva na sessão TEXT! Linha: " << line_count << endl;
+      cout << "ERROR: Diretiva na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
     if (section_table.size() == 3) {
       if (section_table[1].section == "DATA") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "CONST")) {
-          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
         if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "SPACE")) {
-          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "SPACE")) {
-          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
          if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "CONST")) {
-          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
       }
@@ -919,13 +958,13 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
     else {
       if (section_table[1].section == "DATA") {
         if (words[1] == "SPACE") {
-          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (words[1] == "CONST") {
-          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
       }
@@ -947,7 +986,7 @@ void separate_expression(string expression, string *aux1, string *aux2){
 }
 
 /*Insere os valores em memoria no vetor code_vec que representa o codigo de saida do montador*/
-void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count, bool instruction = true){
+void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count, int position_count, bool instruction = true){
   int value;
   string label, second_label;
 
@@ -959,9 +998,15 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
         string aux1 = "", aux2 = "";
         separate_expression(label,&aux1,&aux2);
         value = get_symbol_value(aux1) + atoi(aux2.c_str());
+        if(is_symbol_extern(aux1)){
+          insert_use_table(aux1, position_count+1);
+        }
       }
       else{
         value = get_symbol_value(label);
+        if(is_symbol_extern(label)){
+          insert_use_table(label, position_count+1);
+        }
       }
       code_vec.push_back(value);
     }
@@ -972,18 +1017,30 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
         string aux1 = "", aux2 = "";
         separate_expression(label,&aux1,&aux2);
         value = get_symbol_value(aux1) + atoi(aux2.c_str());
+        if(is_symbol_extern(aux1)){
+          insert_use_table(aux1, position_count+1);
+        }
       }
       else{
         value = get_symbol_value(label);
+        if(is_symbol_extern(label)){
+          insert_use_table(label, position_count+1);
+        }
       }
       code_vec.push_back(value);
       if((second_label.find(" + ") != string::npos)){
         string aux3 = "", aux4 = "";
         separate_expression(second_label,&aux3,&aux4);
         value = get_symbol_value(aux3) + atoi(aux4.c_str());
+        if(is_symbol_extern(aux3)){
+          insert_use_table(aux3, position_count+2);
+        }
       }
       else{
         value = get_symbol_value(second_label);
+        if(is_symbol_extern(second_label)){
+          insert_use_table(second_label, position_count+2);
+        }
       }
       code_vec.push_back(value);
     }
@@ -1067,8 +1124,8 @@ void second_passage() {
       number_operands = (unsigned int)words.size() - 2;
       length = get_instruction_length(words[1], number_operands, line_count);
       if(length != -1){
+        insert_code_vec(words, number_operands, line_count, position_count);
         position_count = position_count + length;
-        insert_code_vec(words, number_operands, line_count);
       }
       else{
         if(!(number_operands)){
@@ -1078,14 +1135,14 @@ void second_passage() {
           length = get_directive_length(words[1], number_operands, line_count, words[2]);
         }
         if(length != -1){
+          insert_code_vec(words, number_operands, line_count, position_count, false);
           position_count = position_count + length;
-          insert_code_vec(words, number_operands, line_count, false);
         }
         else{
           error = true; 
         }
       }
-      check_section_instruction_errors(words, position_count, line_count); /*Verifica se alguma instrução está na sessão errada*/
+      check_section_instruction_errors(words, position_count, line_count); /*Verifica se alguma instrução está na seção errada*/
       line_count++;
     }
     else {
@@ -1132,7 +1189,10 @@ int main(int argc, char *argv[]) {
           print_outputfile();
           cout << "Arquivo montado corretamente!" << endl;
         }
-        print_deftable();       
+
+        print_TS();
+        print_deftable(); 
+        print_usetable();      
       }
       else{
         cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
