@@ -676,19 +676,48 @@ void verify_text_section() {
   }
 }
 
+void separate_expression(string expression, string *aux1, string *aux2){
+  int i = 0;
+  while (expression[i] != ' '){
+    *aux1 = *aux1 + expression[i];
+    i++;
+  }
+  i = i + 3;
+  while (i < (int)expression.size()){
+    *aux2 = *aux2 + expression[i];
+    i++;
+  }
+}
+
 /*Cria o vetor de relativos*/
 void insert_relative(vector<string> words, int line_count) {
   int size_elem=words.size()-2, flag;
-  string *op1, *op2;
+  string op1, op2;
   flag = get_instruction_length(words[1], size_elem, line_count);
   if (flag != -1) {
     if (size_elem >= 1) {
       relative_index++;
-      relative_vec.push_back(relative_index);
+      if (words[1].find(" + ") != string::npos) {
+        separate_expression(words[1], &op1, &op2);
+      }
+      else {
+        op1 = words[1];
+      }
+      if(!is_symbol_extern(op1)) {
+        relative_vec.push_back(relative_index);
+      }
       relative_index++;
     }
     if (size_elem == 2) {
-      relative_vec.push_back(relative_index);
+      if (words[2].find(" + ") != string::npos) {
+        separate_expression(words[2], &op1, &op2);
+      }
+      else {
+        op1 = words[2];
+      }
+      if(!is_symbol_extern(op1)) {
+        relative_vec.push_back(relative_index);
+      }
       relative_index++;
     }
   }
@@ -972,18 +1001,6 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
   }
 }
 
-void separate_expression(string expression, string *aux1, string *aux2){
-  int i = 0;
-  while (expression[i] != ' '){
-    *aux1 = *aux1 + expression[i];
-    i++;
-  }
-  i = i + 3;
-  while (i < (int)expression.size()){
-    *aux2 = *aux2 + expression[i];
-    i++;
-  }
-}
 
 /*Insere os valores em memoria no vetor code_vec que representa o codigo de saida do montador*/
 void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count, int position_count, bool instruction = true){
@@ -1190,9 +1207,6 @@ int main(int argc, char *argv[]) {
           cout << "Arquivo montado corretamente!" << endl;
         }
 
-        print_TS();
-        print_deftable(); 
-        print_usetable();      
       }
       else{
         cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
