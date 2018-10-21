@@ -1048,13 +1048,6 @@ int main(int argc, char *argv[]) {
         initialize_instructions_table();
         first_passage(argv);
         second_passage(argv);
-
-
-        print_TS();
-        print_section_table();
-        print_const_table();
-        print_relative();
-        print_code();
       }
       else{
         cout << "ERROR: O Arquivo "<< argv[1] <<" não existe" << endl;
