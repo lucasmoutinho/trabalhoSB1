@@ -1,3 +1,4 @@
+MOD_A: BEGIN 
 SECTION TEXT    
 ROT:    INPUT       N1 
       COPY N1, N4 ;comentario qualquer
@@ -20,3 +21,4 @@ SECTION BSS
 N1: SPACE 1
 N3: SPACE 2
 N4: SPACE
+END

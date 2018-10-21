@@ -51,6 +51,7 @@ vector<int> relative_vec; /*Vetor de relativos*/
 vector<int> code_vec; /*Vetor de codigo*/
 vector<string> pre_vec; /*vetor de instruções pre processadas*/
 bool error = false; /*Variavel que indica se aconteceu algum erro*/
+bool is_module=false;
 string inputname;
 
 /*Cria a tabela de instruções*/
@@ -206,7 +207,7 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
   for(i = 0; i < directives_size; i++){
     if(word == directives_table[i].directive){
       if(word == "SPACE"){
-        if (!(space_length.empty()) && number_operands == instructions_table[i].number_operands){
+        if (!(space_length.empty()) && number_operands == directives_table[i].number_operands){
           length = atoi(space_length.c_str());
         }
         else if (space_length.empty() && number_operands == 0){
@@ -218,7 +219,7 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
         }
       }
       else{
-        if(number_operands != instructions_table[i].number_operands){
+        if(number_operands != directives_table[i].number_operands){
           cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
           error = true;
         }
@@ -226,6 +227,9 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
       }
       break;
     }
+  }
+  if (word == "BEGIN") {
+    is_module = true;
   }
   return length;
 }
@@ -798,7 +802,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     }
   }
 
-  if (words[1] == "STORE") {
+  if ((words[1] == "STORE") || (words[1] == "INPUT")) {
     for(i=0;i<const_table.size();i++) {
       if (words[2] == const_table[i].label) {
         cout << "ERROR: STORE em CONST! Linha: " << line_count << endl;
@@ -962,14 +966,17 @@ void print_outputfile() {
   objfile.open((inputname + ".obj").c_str()); /*Abre o arquivo obj*/
   prefile.open((inputname + ".pre").c_str()); /*Abre o arquivo pre*/
 
-  objfile << "RELATIVE" << endl;
-  for (i=0;i<relative_vec.size();i++) {
-    objfile << relative_vec[i] << " ";
-  }
-  objfile << endl;
-  objfile << endl;
+  if (is_module == true) {
+    objfile << "RELATIVE" << endl;
+    for (i=0;i<relative_vec.size();i++) {
+      objfile << relative_vec[i] << " ";
+    }
+    objfile << endl;
+    objfile << endl;
 
-  objfile << "CODE" << endl;
+    objfile << "CODE" << endl;
+  }
+ 
   for (i=0;i<code_vec.size();i++) {
     objfile << code_vec[i] << " ";
   }
