@@ -1139,7 +1139,7 @@ int main(int argc, char *argv[]) {
         print_deftable();       
       }
       else{
-        cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
+        cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
     }
   }
