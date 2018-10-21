@@ -1,4 +1,8 @@
-MOD_A: BEGIN 
+MOD_A: BEGIN
+R: EXTERN
+MOD_B: EXTERN
+PUBLIC N1
+PUBLIC N3
 SECTION TEXT    
 ROT:    INPUT       N1 
       COPY N1, N4 ;comentario qualquer

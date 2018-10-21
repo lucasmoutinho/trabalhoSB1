@@ -165,7 +165,7 @@ void initialize_directives_table(){
  
   new_directive.directive = "PUBLIC";
   new_directive.length = 0;
-  new_directive.number_operands = 0;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "EQU";
