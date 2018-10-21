@@ -633,6 +633,20 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
         }
       }
     }
+    else {
+      if (section_table[1].section == "DATA") {
+        if (words[1] == "SPACE") {
+          cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
+          exit(0);
+        }
+      }
+      if (section_table[1].section == "BSS") {
+        if (words[1] == "CONST") {
+          cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
+          exit(0);
+        }
+      }
+    }
   }
 }
 
