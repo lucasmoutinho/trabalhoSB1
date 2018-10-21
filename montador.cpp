@@ -287,6 +287,24 @@ int get_symbol_value(string word){
   return position_count;
 }
 
+/* 
+Retorna o valor do const identificado na tabela pelo símbolo.
+Retorna -1 caso o símbolo não tenha sido encontrado.
+*/
+int get_const_value(string word){
+  int value = -1;
+  unsigned int i, const_size;
+
+  const_size = (unsigned int)const_table.size();
+  for(i = 0; i < const_size; i++){
+    if(word == const_table[i].label){
+      value = const_table[i].value;
+      break;
+    }
+  }
+  return value;
+}
+
 /*
 Retorna um array de palavras, posições:
 0 - rotulo
@@ -859,49 +877,70 @@ void separate_expression(string expression, string *aux1, string *aux2){
   }
 }
 
-/*Cria o vetor com o código montado*/
-void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count){
+/*Insere os valores em memoria no vetor code_vec que representa o codigo de saida do montador*/
+void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count, bool instruction = true){
   int value;
   string label, second_label;
 
-  code_vec.push_back(get_instruction_opcode(words[1]));
-  if(number_operands == 1){
-    label = words[2];
-    if((label.find(" + ") != string::npos)){
-      string aux1 = "", aux2 = "";
-      separate_expression(label,&aux1,&aux2);
-      value = get_symbol_value(aux1) + atoi(aux2.c_str());
+  if(instruction){
+    code_vec.push_back(get_instruction_opcode(words[1]));
+    if(number_operands == 1){
+      label = words[2];
+      if((label.find(" + ") != string::npos)){
+        string aux1 = "", aux2 = "";
+        separate_expression(label,&aux1,&aux2);
+        value = get_symbol_value(aux1) + atoi(aux2.c_str());
+      }
+      else{
+        value = get_symbol_value(label);
+      }
+      code_vec.push_back(value);
     }
-    else{
-      value = get_symbol_value(label);
+    else if(number_operands == 2){
+      label = words[2];
+      second_label = words[3];
+      if((label.find(" + ") != string::npos)){
+        string aux1 = "", aux2 = "";
+        separate_expression(label,&aux1,&aux2);
+        value = get_symbol_value(aux1) + atoi(aux2.c_str());
+      }
+      else{
+        value = get_symbol_value(label);
+      }
+      code_vec.push_back(value);
+      if((second_label.find(" + ") != string::npos)){
+        string aux3 = "", aux4 = "";
+        separate_expression(second_label,&aux3,&aux4);
+        value = get_symbol_value(aux3) + atoi(aux4.c_str());
+      }
+      else{
+        value = get_symbol_value(second_label);
+      }
+      code_vec.push_back(value);
     }
-    code_vec.push_back(value);
+    else if(number_operands != 0){
+      cout << "ERROR: Número de operandos inálidos na linha: " << line_count << endl;
+      exit(0);
+    }
   }
-  else if(number_operands == 2){
-    label = words[2];
-    second_label = words[3];
-    if((label.find(" + ") != string::npos)){
-      string aux1 = "", aux2 = "";
-      separate_expression(label,&aux1,&aux2);
-      value = get_symbol_value(aux1) + atoi(aux2.c_str());
+  else{
+    label = words[1];
+    if(label == "CONST"){
+      value = get_const_value(words[0]);
+      code_vec.push_back(value);
     }
-    else{
-      value = get_symbol_value(label);
+    else if (label == "SPACE"){
+      int i, n;
+      if(number_operands == 0){
+        n = 1;
+      }
+      else{
+        n = atoi(words[2].c_str());
+      }
+      for(i = 0; i < n; i++){
+        code_vec.push_back(0);
+      }
     }
-    code_vec.push_back(value);
-    if((second_label.find(" + ") != string::npos)){
-      string aux3 = "", aux4 = "";
-      separate_expression(second_label,&aux3,&aux4);
-      value = get_symbol_value(aux3) + atoi(aux4.c_str());
-    }
-    else{
-      value = get_symbol_value(second_label);
-    }
-    code_vec.push_back(value);
-  }
-  else if(number_operands != 0){
-    cout << "ERROR: Número de operandos inálidos na linha: " << line_count << endl;
-    exit(0);
   }
 }
 
@@ -961,6 +1000,7 @@ void second_passage(char *argv[]) {
         }
         if(length != -1){
           position_count = position_count + length;
+          insert_code_vec(words, number_operands, line_count, false);
         }
         else{
           cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
