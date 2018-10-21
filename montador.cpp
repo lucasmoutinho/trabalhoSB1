@@ -62,7 +62,10 @@ vector<section_length> section_table; /*Tabela das sessões*/
 vector<const_struct> const_table; /*Tabela de constantes*/
 vector<int> relative_vec; /*Vetor de relativos*/
 vector<int> code_vec; /*Vetor de codigo*/
-
+vector<string> pre_vec; /*vetor de instruções pre processadas*/
+bool error = false; /*Variavel que indica se aconteceu algum erro*/
+bool is_module=false;
+string inputname;
 
 /*Cria a tabela de instruções*/
 void initialize_instructions_table(){
@@ -175,7 +178,7 @@ void initialize_directives_table(){
  
   new_directive.directive = "PUBLIC";
   new_directive.length = 0;
-  new_directive.number_operands = 0;
+  new_directive.number_operands = 1;
   directives_table.push_back(new_directive);
  
   new_directive.directive = "EQU";
@@ -217,7 +220,7 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
   for(i = 0; i < directives_size; i++){
     if(word == directives_table[i].directive){
       if(word == "SPACE"){
-        if (!(space_length.empty()) && number_operands == instructions_table[i].number_operands){
+        if (!(space_length.empty()) && number_operands == directives_table[i].number_operands){
           length = atoi(space_length.c_str());
         }
         else if (space_length.empty() && number_operands == 0){
@@ -225,18 +228,21 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
         }
         else{
           cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
       else{
-        if(number_operands != instructions_table[i].number_operands){
+        if(number_operands != directives_table[i].number_operands){
           cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
-          exit(0);
+          error = true;
         }
         length = directives_table[i].length;
       }
       break;
     }
+  }
+  if (word == "BEGIN") {
+    is_module = true;
   }
   return length;
 }
@@ -252,7 +258,7 @@ int get_instruction_length(string word, unsigned int number_operands, int line_c
     if(word == instructions_table[i].instruction){
       if(number_operands != instructions_table[i].number_operands){
         cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
-        exit(0);
+        error = true;
       }
       length = instructions_table[i].length;
       break;
@@ -403,7 +409,7 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
   }
   if (rotCount >=2) {
     cout << "ERROR: Dois rotulos para mesma instrução, linha: " << *line_count << endl;
-    exit(0);
+    error = true;
   }
   return words;
 }
@@ -535,7 +541,7 @@ int insert_label_TS(string label, int position_count, bool extern_value = false)
 
   symbols new_symbol;
   new_symbol.label = label;
-  if(!extern_value){
+  if(extern_value){
     new_symbol.extern_value = 1;
     new_symbol.position_count = 0;
   }
@@ -571,7 +577,7 @@ void insert_section_table(vector<string> words, int position_count, int line_cou
       }
       if (flag == 0) {
         cout << "ERROR: SECTION não existente, linha: " << line_count << endl;
-        exit(0);
+        error = true;
       }
       section_table.push_back(new_section);
     }
@@ -622,11 +628,11 @@ void verify_text_section() {
 
   if (flag == 0) {
     cout << "ERROR, SECTION TEXT não encontrada!" << endl;
-    exit(0);
+    error = true;
   }
   if (section_table[0].section != "TEXT") {
     cout << "ERROR, SECTION TEXT deve ser a primeira!" << endl;
-    exit(0);
+    error = true;
   }
 }
 
@@ -664,19 +670,14 @@ void update_definitions_table(){
 }
 
 /*Função de primeira passagem do montador*/
-void first_passage(char *argv[]) {
+void first_passage() {
   ifstream inputfile;
-  ofstream outputfile;
   int line_count=1, position_count=0, error = 0, length = 0;
   unsigned int number_operands;
-  string line, prefile;
+  string line, prefile="";
   vector<string> words;
 
-  prefile = argv[1];
-  prefile = prefile.erase(prefile.length()-4, prefile.length()-1) + ".pre";
-
-  outputfile.open(prefile.c_str());
-  inputfile.open(argv[1]); /*Abre o arquivo*/
+  inputfile.open((inputname + ".asm").c_str()); /*Abre o arquivo*/
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
@@ -684,18 +685,20 @@ void first_passage(char *argv[]) {
     if (words.size() > 0) {
 
       if (words[0] != "none") {
-        outputfile << words[0] << ": ";
+        prefile = prefile + words[0] + ": ";
       }
-      outputfile << words[1] << " ";
+      prefile = prefile + words[1] + " ";
       if (words.size() == 2) {
-        outputfile << endl;
+        prefile = prefile + "\n";
       }
       if (words.size() == 3) {
-        outputfile << words[2] << endl;
+        prefile = prefile + words[2] + "\n";
       }
       if (words.size() == 4) {
-        outputfile << words[2] << ", " << words[3] << endl;
+        prefile = prefile + words[2] + ", " + words[3] + "\n";
       }
+      pre_vec.push_back(prefile);
+      prefile = "";
 
       insert_relative(words, line_count);
 
@@ -708,7 +711,7 @@ void first_passage(char *argv[]) {
         }
         if(error == -1){
           cout << "ERROR: Simbolo redefinido na linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
       number_operands = (unsigned int)words.size() - 2;
@@ -732,7 +735,7 @@ void first_passage(char *argv[]) {
         }
         else{
           cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
-          exit(0); 
+          error = true; 
         }
       }
       line_count++;
@@ -760,11 +763,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     }
     if (num == -1) {
       cout << "ERROR: Simbolo de salto não encontrado! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     if ((num < section_table[0].position) || (num > section_table[1].position-1)) {
       cout << "ERROR: Label de salto fora da sessão TEXT! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
   }
 
@@ -785,12 +788,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
       if (space_count > 2) {
         cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
-        exit(0);
+        error = true;
       }
     }
     else {
       cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
       if ((aux == symbols_table[i].label)) {
@@ -799,11 +802,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     }
     if (num == -1) {
       cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
       cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
   }
 
@@ -827,12 +830,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
       if (space_count > 2) {
         cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
-        exit(0);
+        error = true;
       }
     }
     else {
       cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
       if ((aux == symbols_table[i].label)) {
@@ -841,11 +844,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     }
     if (num == -1) {
       cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
       cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
   }
 
@@ -853,16 +856,16 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     for(i=0;i<const_table.size();i++) {
       if ((words[2] == const_table[i].label) && (const_table[i].value == 0)) {
         cout << "ERROR: Divisão por 0! Linha: " << line_count << endl;
-        exit(0);
+        error = true;
       }
     }
   }
 
-  if (words[1] == "STORE") {
+  if ((words[1] == "STORE") || (words[1] == "INPUT")) {
     for(i=0;i<const_table.size();i++) {
       if (words[2] == const_table[i].label) {
         cout << "ERROR: STORE em CONST! Linha: " << line_count << endl;
-        exit(0);
+        error = true;
       }
     }
   }
@@ -872,37 +875,48 @@ void check_instruction_errors(vector<string> words, int position_count, int line
 /*Verifica se alguma expreção foi colocada na sessão errada*/
 void check_section_instruction_errors(vector<string> words, int position_count, int line_count) {
   int isntruction = get_instruction_length(words[1], words.size()-2, line_count);
+  int diretive;
+  unsigned int number_operands = (unsigned int)words.size() - 2;
+
+  if (isntruction == -1) {
+    if(!(number_operands)){
+      diretive = get_directive_length(words[1], number_operands, line_count);
+    }
+    else{
+      diretive = get_directive_length(words[1], number_operands, line_count, words[2]);
+    }
+  }
 
   if (isntruction != -1) {
     if ((position_count < section_table[0].position) || (position_count > section_table[1].position)) {
       cout << "ERROR: Instrução fora da sessão TEXT! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
   }
-  else {
+  else if (diretive != -1) {
     if ((position_count > section_table[0].position) && (position_count <= section_table[1].position) && (words[1] != "SECTION")) {
       cout << "ERROR: Diretiva na sessão TEXT! Linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
     if (section_table.size() == 3) {
       if (section_table[1].section == "DATA") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "CONST")) {
           cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
         if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "SPACE")) {
           cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "SPACE")) {
           cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
          if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "CONST")) {
           cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
     }
@@ -910,13 +924,13 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
       if (section_table[1].section == "DATA") {
         if (words[1] == "SPACE") {
           cout << "ERROR: SPACE fora da sessão BSS! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (words[1] == "CONST") {
           cout << "ERROR: CONST fora da sessão DATA! Linha: " << line_count << endl;
-          exit(0);
+          error = true;
         }
       }
     }
@@ -979,7 +993,7 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
     }
     else if(number_operands != 0){
       cout << "ERROR: Número de operandos inálidos na linha: " << line_count << endl;
-      exit(0);
+      error = true;
     }
   }
   else{
@@ -1003,40 +1017,50 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
   }
 }
 
-/*Cria o arquivo .o*/
-void print_ofile(ofstream *outputfile) {
+/*Cria o arquivo .obj e .pre*/
+void print_outputfile() {
+  ofstream objfile, prefile;
   unsigned int i;
 
-  *outputfile << "RELATIVE" << endl;
-  for (i=0;i<relative_vec.size();i++) {
-    *outputfile << relative_vec[i] << " ";
-  }
-  *outputfile << endl;
-  *outputfile << endl;
+  objfile.open((inputname + ".obj").c_str()); /*Abre o arquivo obj*/
+  prefile.open((inputname + ".pre").c_str()); /*Abre o arquivo pre*/
 
-  *outputfile << "CODE" << endl;
+  if (is_module == true) {
+    objfile << "TABLE DEFINITION" << endl;
+    for (i = 0; i < definitions_table.size(); i++) {
+      objfile << definitions_table[i].label << " " << definitions_table[i].value << endl;
+    }
+    objfile << endl;
+
+    objfile << "RELATIVE" << endl;
+    for (i=0;i<relative_vec.size();i++) {
+      objfile << relative_vec[i] << " ";
+    }
+    objfile << endl;
+    objfile << endl;
+
+    objfile << "CODE" << endl;
+  }
+ 
   for (i=0;i<code_vec.size();i++) {
-    *outputfile << code_vec[i] << " ";
+    objfile << code_vec[i] << " ";
   }
-  *outputfile << endl;
-  *outputfile << endl;
 
+  for (i=0;i<pre_vec.size();i++) {
+    prefile << pre_vec[i];
+  }
 }
 
 /*Segunda passagem*/
-void second_passage(char *argv[]) {
+void second_passage() {
   ifstream inputfile;
-  ofstream outputfile;
   int line_count=1, position_count=0, length;
   string line, ofile;
   vector<string> words;
   unsigned int number_operands;
 
-  ofile = argv[1];
-  ofile = ofile.erase(ofile.length()-4, ofile.length()-1) + ".o";
 
-  outputfile.open(ofile.c_str());
-  inputfile.open(argv[1]); /*Abre o arquivo*/
+  inputfile.open((inputname + ".asm").c_str()); /*Abre o arquivo*/
 
   while (getline(inputfile, line)) {
     transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
@@ -1062,8 +1086,7 @@ void second_passage(char *argv[]) {
           insert_code_vec(words, number_operands, line_count, false);
         }
         else{
-          cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
-          exit(0); 
+          error = true; 
         }
       }
       check_section_instruction_errors(words, position_count, line_count); /*Verifica se alguma instrução está na sessão errada*/
@@ -1073,11 +1096,11 @@ void second_passage(char *argv[]) {
       line_count++;
     }
   }
-  print_ofile(&outputfile);
 }
 
 /*Verifica se o arquivo foi enviado corretamente*/
 bool correcet_execution(int argc, string s) {
+  s = s + ".asm";
   bool correct=true;
   if (argc != 2) {
     cout << "ERROR: Numero de argumentos errados! Apenas um arquivo de entrada é permitido por execução" << endl;
@@ -1100,17 +1123,23 @@ bool fexists(const string &filename){
 }
 
 int main(int argc, char *argv[]) {
-  if(argc != 1){
+  inputname = argv[1];
+  if(argc != 1) {
     if (correcet_execution(argc, argv[1])) {
-      if (fexists(argv[1])) {
+      if (fexists((inputname + ".asm").c_str())) {
         initialize_directives_table();
         initialize_instructions_table();
-        first_passage(argv);
-        second_passage(argv);
-        print_deftable();
+        first_passage();
+        second_passage();
+
+        if (error == false) {
+          print_outputfile();
+          cout << "Arquivo montado corretamente!" << endl;
+        }
+        print_deftable();       
       }
       else{
-        cout << "ERROR: O Arquivo "<< argv[1] <<" não existe" << endl;
+        cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
       }
     }
   }
