@@ -42,14 +42,16 @@ struct const_struct {
   int value;
 };
 
-vector<symbols> symbols_table;
-vector<instruction_length> instructions_table;
-vector<directive_length> directives_table;
-vector<section_length> section_table;
-vector<const_struct> const_table;
-vector<int> relative_vec;
-vector<int> code_vec;
+vector<symbols> symbols_table; /*Tabela de simbolos*/
+vector<instruction_length> instructions_table; /*Tabela de instruções*/
+vector<directive_length> directives_table; /*Tabela de diretivas*/
+vector<section_length> section_table; /*Tabela das sessões*/
+vector<const_struct> const_table; /*Tabela de constantes*/
+vector<int> relative_vec; /*Vetor de relativos*/
+vector<int> code_vec; /*Vetor de codigo*/
 
+
+/*Cria a tabela de instruções*/
 void initialize_instructions_table(){
   instruction_length new_instruction;
 
@@ -139,6 +141,7 @@ void initialize_instructions_table(){
 
 }
 
+/*Cria a tabela de diretivas*/
 void initialize_directives_table(){
   directive_length new_directive;
 
@@ -666,6 +669,7 @@ void first_passage(char *argv[]) {
   verify_text_section();
 }
 
+/*Verifica os erros de operandos*/
 void check_instruction_errors(vector<string> words, int position_count, int line_count) {
   string aux="";
   int  num=-1, space_count=0;
@@ -788,6 +792,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
 
 }
 
+/*Verifica se alguma expreção foi colocada na sessão errada*/
 void check_section_instruction_errors(vector<string> words, int position_count, int line_count) {
   int isntruction = get_instruction_length(words[1], words.size()-2, line_count);
 
@@ -854,6 +859,7 @@ void separate_expression(string expression, string *aux1, string *aux2){
   }
 }
 
+/*Cria o vetor com o código montado*/
 void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count){
   int value;
   string label, second_label;
@@ -899,6 +905,7 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
   }
 }
 
+/*Segunda passagem*/
 void second_passage(char *argv[]) {
   ifstream inputfile;
   ofstream outputfile;
@@ -918,7 +925,7 @@ void second_passage(char *argv[]) {
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
 
-      check_instruction_errors(words, position_count, line_count);
+      check_instruction_errors(words, position_count, line_count); /*Verifica os erros de operandos*/
       number_operands = (unsigned int)words.size() - 2;
       length = get_instruction_length(words[1], number_operands, line_count);
       if(length != -1){
@@ -940,7 +947,7 @@ void second_passage(char *argv[]) {
           exit(0); 
         }
       }
-      check_section_instruction_errors(words, position_count, line_count);
+      check_section_instruction_errors(words, position_count, line_count); /*Verifica se alguma instrução está na sessão errada*/
       line_count++;
     }
     else {
@@ -949,6 +956,7 @@ void second_passage(char *argv[]) {
   }
 }
 
+/*Verifica se o arquivo foi enviado corretamente*/
 bool correcet_execution(int argc, string s) {
   bool correct=true;
   if (argc != 2) {
