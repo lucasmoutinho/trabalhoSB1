@@ -905,6 +905,26 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
   }
 }
 
+/*Cria o arquivo .o*/
+void print_ofile(ofstream *outputfile) {
+  unsigned int i;
+
+  *outputfile << "RELATIVE" << endl;
+  for (i=0;i<relative_vec.size();i++) {
+    *outputfile << relative_vec[i] << " ";
+  }
+  *outputfile << endl;
+  *outputfile << endl;
+
+  *outputfile << "CODE" << endl;
+  for (i=0;i<code_vec.size();i++) {
+    *outputfile << code_vec[i] << " ";
+  }
+  *outputfile << endl;
+  *outputfile << endl;
+
+}
+
 /*Segunda passagem*/
 void second_passage(char *argv[]) {
   ifstream inputfile;
@@ -954,6 +974,7 @@ void second_passage(char *argv[]) {
       line_count++;
     }
   }
+  print_ofile(&outputfile);
 }
 
 /*Verifica se o arquivo foi enviado corretamente*/
@@ -988,12 +1009,7 @@ int main(int argc, char *argv[]) {
       first_passage(argv);
       second_passage(argv);
 
-
-      print_TS();
-      print_section_table();
-      print_const_table();
-      print_relative();
-      print_code();
+      cout << "Arquivo montado corretamente!" << endl;
     }
     else{
       cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
