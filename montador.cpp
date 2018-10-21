@@ -16,6 +16,17 @@ using namespace std;
 struct symbols {
   string label;
   int position_count;
+  int extern_value; // 0 se não é valor externo e 1 se é
+};
+
+struct definition {
+  string label;
+  int value;
+};
+
+struct use {
+  string label;
+  int position_count;
 };
 
 struct instruction_length{
@@ -43,6 +54,8 @@ struct const_struct {
 };
 
 vector<symbols> symbols_table; /*Tabela de simbolos*/
+vector<definition> definitions_table; /*Tabela de Definições*/
+vector<use> use_table; /*Tabela de Uso*/
 vector<instruction_length> instructions_table; /*Tabela de instruções*/
 vector<directive_length> directives_table; /*Tabela de diretivas*/
 vector<section_length> section_table; /*Tabela das sessões*/
@@ -442,6 +455,19 @@ void print_TS(){
   cout << "-------------" << endl;
 }
 
+/* Print Definitions Table no terminal */
+void print_deftable(){
+  unsigned int table_size = (unsigned int)definitions_table.size();
+  unsigned int i;
+
+  cout << "-------------" << endl;
+  for(i = 0; i < table_size; i++){
+    cout << definitions_table[i].label << endl;
+    cout << definitions_table[i].value << endl << endl;
+  }
+  cout << "-------------" << endl;
+}
+
 void print_section_table() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i;
@@ -496,7 +522,7 @@ void print_code() {
 
 // Procura rótulo na Tabela de Símbolos. Se achou emite um erro de símbolo redefinido e retorna -1
 // Senão insere rótulo e position_count na TS e retorna 0
-int insert_label_TS(string label, int position_count){
+int insert_label_TS(string label, int position_count, bool extern_value = false){
   unsigned int table_size = (unsigned int)symbols_table.size();
   unsigned int i = 0;
   bool found = false;
@@ -515,9 +541,15 @@ int insert_label_TS(string label, int position_count){
   }
 
   symbols new_symbol;
-  new_symbol.label = label; 
-  new_symbol.position_count = position_count;
-
+  new_symbol.label = label;
+  if(extern_value){
+    new_symbol.extern_value = 1;
+    new_symbol.position_count = 0;
+  }
+  else{
+    new_symbol.extern_value = 0;
+    new_symbol.position_count = position_count;
+  }
   symbols_table.push_back(new_symbol); 
 
   return 0;
@@ -574,6 +606,17 @@ void insert_const_table(vector<string> words, int position_count) {
   }
 }
 
+void insert_definitions_table(vector<string> words) {
+  definition new_definition;
+
+  if (words.size() == 3) {
+    if (words[1] == "PUBLIC") {
+      new_definition.label = words[2];
+      definitions_table.push_back(new_definition);
+    }
+  }
+}
+
 void verify_text_section() {
   unsigned int table_size = (unsigned int)section_table.size();
   unsigned int i, flag=0;
@@ -612,6 +655,15 @@ void insert_relative(vector<string> words, int line_count) {
 
 }
 
+void update_definitions_table(){
+  unsigned int i;
+  unsigned int table_size = (unsigned int)definitions_table.size();
+
+  for(i = 0; i < table_size; i++){
+    definitions_table[i].value = get_symbol_value(definitions_table[i].label);
+  }
+}
+
 /*Função de primeira passagem do montador*/
 void first_passage() {
   ifstream inputfile;
@@ -646,7 +698,12 @@ void first_passage() {
       insert_relative(words, line_count);
 
       if(words[0] != "none"){ //Rótulo existe
-        error = insert_label_TS(words[0],position_count);
+        if(words[1] == "EXTERN"){
+          error = insert_label_TS(words[0],position_count, true);
+        }
+        else{
+          error = insert_label_TS(words[0], position_count);
+        }
         if(error == -1){
           cout << "ERROR: Simbolo redefinido na linha: " << line_count << endl;
           error = true;
@@ -668,6 +725,7 @@ void first_passage() {
           // executa diretiva
           insert_section_table(words, position_count, line_count);
           insert_const_table(words, position_count);
+          insert_definitions_table(words);
           position_count = position_count + length;
         }
         else{
@@ -683,6 +741,7 @@ void first_passage() {
     }
   }
   verify_text_section();
+  update_definitions_table();
 }
 
 /*Verifica os erros de operandos*/
@@ -962,6 +1021,12 @@ void print_outputfile() {
   prefile.open((inputname + ".pre").c_str()); /*Abre o arquivo pre*/
 
   if (is_module == true) {
+    objfile << "TABLE DEFINITION" << endl;
+    for (i = 0; i < definitions_table.size(); i++) {
+      objfile << definitions_table[i].label << " " << definitions_table[i].value << endl;
+    }
+    objfile << endl;
+
     objfile << "RELATIVE" << endl;
     for (i=0;i<relative_vec.size();i++) {
       objfile << relative_vec[i] << " ";
@@ -1066,10 +1131,10 @@ int main(int argc, char *argv[]) {
           print_outputfile();
           cout << "Arquivo montado corretamente!" << endl;
         }
-       
+        print_deftable();       
       }
       else{
-        cout << "O Arquivo "<< argv[1] <<" não existe" << endl;
+        cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
     }
   }
