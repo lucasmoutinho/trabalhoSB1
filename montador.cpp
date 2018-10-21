@@ -640,6 +640,7 @@ void verify_text_section() {
 /*Cria o vetor de relativos*/
 void insert_relative(vector<string> words, int line_count) {
   int size_elem=words.size()-2, flag;
+  string *op1, *op2;
   flag = get_instruction_length(words[1], size_elem, line_count);
   if (flag != -1) {
     if (size_elem >= 1) {
