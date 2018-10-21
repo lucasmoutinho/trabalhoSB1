@@ -53,6 +53,7 @@ vector<string> pre_vec; /*vetor de instruções pre processadas*/
 bool error = false; /*Variavel que indica se aconteceu algum erro*/
 bool is_module=false;
 string inputname;
+int relative_index=0; 
 
 /*Cria a tabela de instruções*/
 void initialize_instructions_table(){
@@ -595,23 +596,17 @@ void verify_text_section() {
 
 /*Cria o vetor de relativos*/
 void insert_relative(vector<string> words, int line_count) {
-  int size_elem=words.size()-2, flag, i, num;
+  int size_elem=words.size()-2, flag;
   flag = get_instruction_length(words[1], size_elem, line_count);
   if (flag != -1) {
-    if (relative_vec.size() > 0) {
-      num = relative_vec[relative_vec.size()-1];
-      num++;
-      for (i=0;i<size_elem;i++) {
-        num++;
-        relative_vec.push_back(num);
-      }
+    if (size_elem >= 1) {
+      relative_index++;
+      relative_vec.push_back(relative_index);
+      relative_index++;
     }
-    else if (size_elem == 1) {
-      relative_vec.push_back(1);
-    }
-    else if (size_elem == 2) {
-      relative_vec.push_back(1);
-      relative_vec.push_back(2);
+    if (size_elem == 2) {
+      relative_vec.push_back(relative_index);
+      relative_index++;
     }
   }
 
