@@ -597,6 +597,128 @@ void first_passage(char *argv[]) {
   verify_text_section();
 }
 
+void check_instruction_errors(vector<string> words, int position_count, int line_count) {
+  string aux="";
+  int  num=-1, space_count=0;
+  unsigned int i;
+
+  if ((words[1] == "JMP") || (words[1] == "JMPN") || (words[1] == "JMPP") || (words[1] == "JMPZ")) {
+    for(i=0;i<symbols_table.size();i++) {
+      if (words[2] == symbols_table[i].label) {
+        num = symbols_table[i].position_count;
+      }
+    }
+    if (num == -1) {
+      cout << "ERROR: Simbolo de salto não encontrado! Linha: " << line_count << endl;
+      exit(0);
+    }
+    if ((num < section_table[0].position) || (num > section_table[1].position-1)) {
+      cout << "ERROR: Label de salto fora da sessão TEXT! Linha: " << line_count << endl;
+      exit(0);
+    }
+  }
+
+  if ((words[1] == "ADD") || (words[1] == "SUB") || (words[1] == "MULT") || (words[1] == "DIV") || (words[1] == "LOAD") || (words[1] == "STORE") || (words[1] == "INPUT") || (words[1] == "OUTPUT") || (words[1] == "COPY")) {
+    if (words[2].find(" ") == string::npos) {
+      aux = words[2];
+    }
+    else if (words[2].find(" + ") != string::npos) {
+      i=0;
+      while (words[2][i] != ' ') {
+        aux = aux + words[2][i];
+        i++;
+      }
+      for (i=0;i<words[2].length();i++) {
+        if (words[2][i] == ' ') {
+          space_count++;
+        }
+      }
+      if (space_count > 2) {
+        cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+        exit(0);
+      }
+    }
+    else {
+      cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+      exit(0);
+    }
+    for(i=0;i<symbols_table.size();i++) {
+      if ((aux == symbols_table[i].label)) {
+        num = symbols_table[i].position_count;
+      }
+    }
+    if (num == -1) {
+      cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
+      exit(0);
+    }
+    if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
+      cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
+      exit(0);
+    }
+  }
+
+  if (words[1] == "COPY") {
+    space_count=0;
+    aux="";
+    num=-1;
+    if (words[3].find(" ") == string::npos) {
+      aux = words[3];
+    }
+    else if (words[3].find(" + ") != string::npos) {
+      i=0;
+      while (words[3][i] != ' ') {
+        aux = aux + words[2][i];
+        i++;
+      }
+      for (i=0;i<words[3].length();i++) {
+        if (words[3][i] == ' ') {
+          space_count++;
+        }
+      }
+      if (space_count > 2) {
+        cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+        exit(0);
+      }
+    }
+    else {
+      cout << "ERROR: Expreção não valida! Linha: " << line_count << endl;
+      exit(0);
+    }
+    for(i=0;i<symbols_table.size();i++) {
+      if ((aux == symbols_table[i].label)) {
+        num = symbols_table[i].position_count;
+      }
+    }
+    if (num == -1) {
+      cout << "ERROR: Simbolo não encontrado! Linha: " << line_count << endl;
+      exit(0);
+    }
+    if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
+      cout << "ERROR: Operando na sessão TEXT! Linha: " << line_count << endl;
+      exit(0);
+    }
+  }
+
+  if (words[1] == "DIV") {
+    for(i=0;i<const_table.size();i++) {
+      if ((words[2] == const_table[i].label) && (const_table[i].value == 0)) {
+        cout << "ERROR: Divisão por 0! Linha: " << line_count << endl;
+        exit(0);
+      }
+    }
+  }
+
+  if (words[1] == "STORE") {
+    for(i=0;i<const_table.size();i++) {
+      if (words[2] == const_table[i].label) {
+        cout << "ERROR: STORE em CONST! Linha: " << line_count << endl;
+        exit(0);
+      }
+    }
+  }
+
+}
+
 void check_section_instruction_errors(vector<string> words, int position_count, int line_count) {
   int isntruction = get_instruction_length(words[1], words.size()-2, line_count);
 
@@ -669,6 +791,7 @@ void second_passage(char *argv[]) {
     words = separate_instructions(line, &inputfile, &line_count);
     if (words.size() > 0) {
 
+      check_instruction_errors(words, position_count, line_count);
       number_operands = (unsigned int)words.size() - 2;
       length = get_instruction_length(words[1], number_operands, line_count);
       if(length != -1){
