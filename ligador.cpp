@@ -100,6 +100,38 @@ void print_code() {
 	cout << "-------------" << endl;
 }
 
+bool find_at_definition_global(string label){
+  unsigned int i, global_size;
+  bool found = false;
+
+  global_size = (unsigned int)table_definition_global.size();
+
+  for(i = 0; i<global_size; i++){
+    if(table_definition_global[i].label == label){
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+void verify_tables_use() {
+  unsigned int i, j;
+  unsigned int use_size;
+  bool found;
+
+  for(i = 0; i < files.size(); i++){
+    use_size = (unsigned int)files[i].table_use.size();
+    for(j = 0; j < use_size; j++){
+      found = find_at_definition_global(files[i].table_use[j].label);
+      if(!found){
+        cout << "ERROR: Símbolo " << files[i].table_use[j].label << " da tabela de uso do arquivo " << files[i].name <<".obj não foi encontrado em nenhuma tabela de definição dos outros módulos. Processo de ligação foi interrompido" << endl;
+        exit(0);
+      }
+    }
+  }
+}
+
 void create_global_table_definition() {
 	unsigned int i, j,mod=0;
 	table_definition_struct table;
@@ -306,12 +338,10 @@ int main(int argc, char *argv[]){
     verify_if_all_file_is_module();
     parser();
     create_global_table_definition();
+    verify_tables_use();
     update_with_use_table();
     update_relative();
     print_file();
-
-    print_global_table();
-    print_code();
   }
 	cout << "Arquivo ligado corretamente" << endl;
 
