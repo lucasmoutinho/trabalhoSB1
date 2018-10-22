@@ -13,19 +13,19 @@
 
 using namespace std;
 
-vector<string> inputname;
-int num_arquivos;
-
+//Struct das tabelas de uso de cada arquivo passado como argumento
 struct table_use_struct {
 	string label;
 	int position;
 };
 
+//Struct da tabela de definição, unitária e global
 struct table_definition_struct {
 	string label;
 	int position;
 };
 
+//Struct de dados de cada arquivo passado como argumento
 struct file_struct {
 	string name;
 	vector<table_use_struct> table_use;
@@ -34,10 +34,13 @@ struct file_struct {
 	vector<int> code;
 };
 
-vector<file_struct> files;
-vector<table_definition_struct> table_definition_global;
-vector<int> mod_global;
+vector<file_struct> files; //Vetor de arquivos passados como argumentos
+vector<table_definition_struct> table_definition_global; //Tabela global de definições
+vector<int> mod_global; //índice da tabela global
+vector<string> inputname; //Vetor de nomes de arquivos de entrada
+int num_arquivos; //Número de arquivos passados como argumento
 
+// Cria o arquivo executável do ligador com opcodes e operandos em uma linha
 void print_file() {
 	ofstream output;
 	unsigned int i, j;
@@ -51,6 +54,7 @@ void print_file() {
 	}
 }
 
+// Atualiza os dados do vetor de códigos de saída dos símbolos encontrados no vetor de relativos
 void update_relative() {
 	unsigned int i, j, index;
 	for (i=0;i<files.size();i++) {
@@ -61,6 +65,7 @@ void update_relative() {
 	}
 }
 
+// Atualiza os dados do vetor de códigos de saída dos símbolos encontrados nas tabelas de uso
 void update_with_use_table() {
 	int length, index;
 	string aux;
@@ -79,6 +84,7 @@ void update_with_use_table() {
 	}
 }
 
+// Imprime a tabela global de definições no terminal
 void print_global_table() {
 	unsigned int i;
 	cout << "-------------" << endl;
@@ -88,6 +94,7 @@ void print_global_table() {
 	cout << "-------------" << endl;
 }
 
+// Imprime o vetor de códigos com opcodes e operandos no terminal
 void print_code() {
 	unsigned int i, j;
 	cout << "-------------" << endl;
@@ -100,6 +107,7 @@ void print_code() {
 	cout << "-------------" << endl;
 }
 
+// Procura uma label na tabela de definições
 bool find_at_definition_global(string label){
   unsigned int i, global_size;
   bool found = false;
@@ -115,6 +123,7 @@ bool find_at_definition_global(string label){
   return found;
 }
 
+// Verifica a existência de dados da tabela de uso de cada arquivo na tabela global de definições
 void verify_tables_use() {
   unsigned int i, j;
   unsigned int use_size;
@@ -132,6 +141,7 @@ void verify_tables_use() {
   }
 }
 
+// Cria a tabela global de definições
 void create_global_table_definition() {
 	unsigned int i, j,mod=0;
 	table_definition_struct table;
@@ -147,6 +157,9 @@ void create_global_table_definition() {
 	}
 }
 
+// Transforma o arquivo passado em um executável caso seja um código objeto único e que
+// não utiliza da tabela de uso. Emite um erro caso utilize tabela de uso, mas os módulos
+// auxiliares não são encontrados
 void verify_one_file() {
   ifstream inputfile;
   ofstream objfile;
@@ -183,6 +196,8 @@ void verify_one_file() {
   exit(0);
 }
 
+// Verifica se todos os arquivos passados são módulos para o caso em que são passados mais de
+// um arquivo como argumento
 void verify_if_all_file_is_module() {
   ifstream inputfile;
   int i;
@@ -204,6 +219,9 @@ void verify_if_all_file_is_module() {
   }
 }
 
+// Realiza o parser nos códigos objetos gerados pelo montador.
+// Criando as tabelas de uso, definição, relativos e códigos de cada arquivo passado como argumento
+// em memória
 void parser() {
 	unsigned int j;
 	int i;
@@ -304,11 +322,13 @@ void parser() {
 	}
 }
 
+// Verifica se um arquivo passado como argumento existe
 bool fexists(const string &filename){
 	ifstream ifile(filename.c_str());
 	return (bool) ifile;
 }
 
+// Verifica se todos os arquivos passados como argumento existes
 void all_file_exist(int argc, char *argv[]) {
 	int i;
 	num_arquivos = argc-1;
@@ -321,6 +341,8 @@ void all_file_exist(int argc, char *argv[]) {
 	}
 }
 
+// Função main que averigua se o arquivo fora aberto com sucesso e chama as funções 
+// para o correto processo de ligação dos códigos objetos
 int main(int argc, char *argv[]){
 	if(argc < 2) {
 		cout << "ERROR SINTATICO: Número de argumentos não pode ser vazio. Por favor insira o nome de um a quatro arquivos de entrada na linha de comando" << endl;
@@ -343,7 +365,7 @@ int main(int argc, char *argv[]){
     update_relative();
     print_file();
   }
-	cout << "Arquivo ligado corretamente" << endl;
+	cout << "Arquivo(s) ligado(s) corretamente!" << endl;
 
 	return 0;
 }
