@@ -36,14 +36,31 @@ struct file_struct {
 
 vector<file_struct> files;
 vector<table_definition_struct> table_definition_global;
+vector<int> mod_global;
 
 
-void create_global_table_use() {
-
+void print_global_table() {
+	unsigned int i;
+	cout << "-------------" << endl;
+	for (i=0;i<table_definition_global.size();i++) {
+		cout << table_definition_global[i].label << " " << table_definition_global[i].position << endl;
+	}
+	cout << "-------------" << endl;
 }
 
-void update_global_table_use() {
-	
+void create_global_table_use() {
+	unsigned int i, j,mod=0;
+	table_definition_struct table;
+
+	for (i=0;i<files.size();i++) {
+		mod_global.push_back(mod);
+		for (j=0;j<files[i].table_definition.size();j++) {
+			table.label = files[i].table_definition[j].label;
+			table.position = files[i].table_definition[j].position + mod;
+			table_definition_global.push_back(table);
+		}
+		mod = mod + files[i].code.size();
+	}
 }
 
 void verify_one_file() {
@@ -161,7 +178,7 @@ void parser() {
 				j++;
 			}
 			j++;
-			file.code.push_back(atoi(aux.c_str()));
+			file.relative.push_back(atoi(aux.c_str()));
 		}
 
 
@@ -220,7 +237,7 @@ int main(int argc, char *argv[]){
     verify_if_all_file_is_module();
     parser();
     create_global_table_use();
-    update_global_table_use();
+    print_global_table();
   }
 	cout << "Arquivo ligado corretamente" << endl;
 
