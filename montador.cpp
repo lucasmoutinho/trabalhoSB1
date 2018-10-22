@@ -1003,6 +1003,13 @@ void check_instruction_errors(vector<string> words, int position_count, int line
     }
   }
 
+  if (words.size() == 4) {
+    if ((words[3][0] >= '0' && words[3][0] <= '9') && (words[1] != "SPACE") && (words[1] != "CONST")) {
+      cout << "ERROR: Operando começa com um número: " << line_count << endl;
+      error = true;
+    }
+  }
+
 }
 
 /*Verifica se alguma expressão foi colocada na seção errada*/
