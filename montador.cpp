@@ -860,7 +860,7 @@ void first_passage() {
 void check_instruction_errors(vector<string> words, int position_count, int line_count) {
   string aux="";
   int  num=-1, space_count=0;
-  unsigned int i;
+  unsigned int i, j;
 
   if ((words[1] == "JMP") || (words[1] == "JMPN") || (words[1] == "JMPP") || (words[1] == "JMPZ")) {
     for(i=0;i<symbols_table.size();i++) {
@@ -974,6 +974,32 @@ void check_instruction_errors(vector<string> words, int position_count, int line
         cout << "ERROR: STORE em CONST! Linha: " << line_count << endl;
         error = true;
       }
+    }
+  }
+
+ 
+  if (words.size() >= 3) {
+    for (j=0;j<words[2].length();j++) {
+      if ((words[2][j] < '0' || words[2][j] >'9' ) && (words[2][j] < 'a' || words[2][j] >'z' ) && (words[2][j] < 'A' || words[2][j] > 'Z') && words[2][j] != ' ' && words[2][j] != '_' && words[2][j] != '+' && words[2][j] != '-') {
+        cout << "ERROR: Operando possui um caractere não válido: " << line_count << endl;
+        error = true;
+      }
+    }
+  }
+
+  if (words.size() == 4) {
+    for (j=0;j<words[3].length();j++) {
+      if ((words[3][j] < '0' || words[3][j] >'9' ) && (words[3][j] < 'a' || words[3][j] >'z' ) && (words[3][j] < 'A' || words[3][j] > 'Z') && words[3][j] != ' ' && words[3][j] != '_' && words[3][j] != '+' && words[3][j] != '-') {
+        cout << "ERROR: Operando possui um caractere não válido: " << line_count << endl;
+        error = true;
+      }
+    }
+  }
+
+  if (words.size() >= 3) {
+    if ((words[2][0] >= '0' && words[2][0] <= '9') && (words[1] != "SPACE") && (words[1] != "CONST")) {
+      cout << "ERROR: Operando começa com um número: " << line_count << endl;
+      error = true;
     }
   }
 
