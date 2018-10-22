@@ -1096,6 +1096,12 @@ void print_outputfile() {
   prefile.open((inputname + ".pre").c_str()); /*Abre o arquivo pre*/
 
   if (is_module == true) {
+    objfile << "TABLE USE" << endl;
+    for (i = 0; i < use_table.size(); i++) {
+      objfile << use_table[i].label << " " << use_table[i].position_count << endl;
+    }
+    objfile << endl;
+
     objfile << "TABLE DEFINITION" << endl;
     for (i = 0; i < definitions_table.size(); i++) {
       objfile << definitions_table[i].label << " " << definitions_table[i].value << endl;
@@ -1206,8 +1212,8 @@ int main(int argc, char *argv[]) {
           print_outputfile();
           cout << "Arquivo montado corretamente!" << endl;
         }
-
       }
+      
       else{
         cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
