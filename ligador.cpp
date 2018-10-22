@@ -39,7 +39,27 @@ table_definition_struct table_definition_global;
 
 
 void verify_one_file() {
+  ifstream inputfile;
+  ofstream objfile;
+  string line;
 
+  inputfile.open((inputname[0] + ".obj").c_str()); /*Abre o arquivo*/
+
+  if(getline(inputfile,line)){
+    if (line.find("TABLE USE") != string::npos){
+      cout << "ERROR: Apenas um módulo encontrado: (" << inputname[0] << ".obj). É necessário mais de um para a ligação correta" << endl;
+      exit(0);
+    }
+    else{
+      objfile.open((inputname[0] + ".e").c_str()); /*Abre o arquivo executável*/
+      objfile << line;
+    }
+  }
+
+  inputfile.close();
+  objfile.close();
+  cout << "Arquivo ligado corretamente" << endl;
+  exit(0);
 }
 
 void verify_if_all_file_is_module() {
@@ -173,9 +193,13 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 	all_file_exist(argc, argv);
-	verify_one_file();
-	verify_if_all_file_is_module();
-	parser();
+  if(num_arquivos == 1){
+	  verify_one_file();
+  }
+  else{
+    verify_if_all_file_is_module();
+    parser();
+  }
 	cout << "Arquivo ligado corretamente" << endl;
 
 	return 0;
