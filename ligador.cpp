@@ -100,7 +100,24 @@ void verify_one_file() {
 }
 
 void verify_if_all_file_is_module() {
+  ifstream inputfile;
+  int i;
+  string line;
+  bool error = false;
 
+  for(i = 0; i < num_arquivos; i++){
+    inputfile.open((inputname[i] + ".obj").c_str()); /*Abre o arquivo*/
+    getline(inputfile, line);
+    if(!(line.find("TABLE USE") != string::npos)){
+      error = true;
+      break;
+    }
+    inputfile.close();
+  }
+  if(error){
+    cout << "ERROR: Arquivo " << inputname[i] <<".obj não é módulo. Ao passar mais de um arquivo como argumento, todos precisam ser módulos para a correta ligação" << endl;
+    exit(0);
+  }
 }
 
 void parser() {
