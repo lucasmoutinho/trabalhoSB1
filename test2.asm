@@ -1,0 +1,28 @@
+MOD_B: BEGIN
+N1: EXTERN
+N3: EXTERN
+PUBLIC R
+PUBLIC MOD_B
+SECTION TEXT    
+ROT:    INPUT       N3 
+      COPY R, N4 ;comentario qualquer
+ROT2: 
+
+
+
+			       COPY N2, N5 
+COPY N5, N1 + 1 
+
+
+OUTPUT N1 + 1
+
+STOP
+
+;comentario qualuer
+SECTION DATA 
+N2: CONST -5
+SECTION BSS
+R: SPACE 1
+N5: SPACE 2
+N4: SPACE
+END

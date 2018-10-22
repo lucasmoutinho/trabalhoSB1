@@ -16,35 +16,94 @@ using namespace std;
 vector<string> inputname;
 int num_arquivos;
 
+struct table_use_struct {
+	string label;
+	int position;
+};
+
+struct table_definition_struct {
+	string label;
+	int position;
+};
+
+struct file_struct {
+	string name;
+	vector<table_use_struct> table_use;
+	vector<table_definition_struct> table_definition;
+	vector<int> relative;
+	vector<int> code;
+};
+
+struct linker_struct {
+	vector<file_struct> files;
+};
+
+linker_struct linker;
+
+void verify_one_file() {
+
+}
+
+void verify_if_all_file_is_module() {
+
+}
+
+void parser() {
+	int i;
+	string line;
+	ifstream file_input;
+	file_struct file;
+	table_definition_struct table_definition;
+	table_use_struct table_use;
+
+	for (i=0;i<num_arquivos;i++) {
+		file_input.open((inputname[i] + ".obj").c_str());
+		file.name = "";
+		file.table_definition.clear();
+		file.table_use.clear();
+		file.code.clear();
+		file.relative.clear();
+
+		getline(file_input, line);
+		getline(file_input, line);
+
+
+		file_input.close();
+	}
+
+}
+
 bool fexists(const string &filename){
-  ifstream ifile(filename.c_str());
-  return (bool) ifile;
+	ifstream ifile(filename.c_str());
+	return (bool) ifile;
+}
+
+void all_file_exist(int argc, char *argv[]) {
+	int i;
+	num_arquivos = argc-1;
+	for(i = 0; i < num_arquivos; i++){
+		inputname.push_back(argv[i+1]);
+		if(!(fexists((inputname[i] + ".obj").c_str()))){
+			cout << "ERROR: O Arquivo " << inputname[i] << ".obj não existe" << endl;
+			exit(0);
+		}
+	}
 }
 
 int main(int argc, char *argv[]){
-  int i;
-  bool correct_execution = true;
+	if(argc < 2) {
+		cout << "ERROR: Número de argumentos não pode ser vazio. Por favor insira o nome de um a quatro arquivos de entrada na linha de comando" << endl;
+		exit(0);
+	}
+	if(argc > 5) {
+		cout << "ERROR: Número de argumentos não pode ultrapassar o limite de 4 nomes de arquivo" << endl;
+		exit(0);
+	}
+	all_file_exist(argc, argv);
+	verify_one_file();
+	verify_if_all_file_is_module();
+	parser();
+	cout << "Arquivo ligado corretamente" << endl;
 
-  if(argc < 2){
-    cout << "ERROR: Número de argumentos não pode ser vazio. Por favor insira o nome de um a quatro arquivos de entrada na linha de comando" << endl;
-  }
-  else if(argc > 5){
-    cout << "ERROR: Número de argumentos não pode ultrapassar o limite de 4 nomes de arquivo" << endl;
-  }
-  else{
-    num_arquivos = argc-1;
-    for(i = 0; i < num_arquivos; i++){
-      inputname.push_back(argv[i+1]);
-      if(!(fexists((inputname[i] + ".obj").c_str()))){
-        correct_execution = false;
-        cout << "ERROR: O Arquivo " << argv[i+1] << ".obj não existe" << endl;
-      }
-    }
-    if(correct_execution){
-      cout << "Arquivo ligado corretamente" << endl;
-    }
-  }
-
-
-  return 0;
+	return 0;
 }
