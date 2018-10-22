@@ -34,11 +34,9 @@ struct file_struct {
 	vector<int> code;
 };
 
-struct linker_struct {
-	vector<file_struct> files;
-};
+vector<file_struct> files;
+table_definition_struct table_definition_global;
 
-linker_struct linker;
 
 void verify_one_file() {
   ifstream inputfile;
@@ -81,8 +79,9 @@ void verify_if_all_file_is_module() {
 }
 
 void parser() {
+	unsigned int j;
 	int i;
-	string line;
+	string line, aux="";
 	ifstream file_input;
 	file_struct file;
 	table_definition_struct table_definition;
@@ -90,19 +89,93 @@ void parser() {
 
 	for (i=0;i<num_arquivos;i++) {
 		file_input.open((inputname[i] + ".obj").c_str());
+
 		file.name = "";
 		file.table_definition.clear();
 		file.table_use.clear();
 		file.code.clear();
 		file.relative.clear();
 
-		getline(file_input, line);
-		getline(file_input, line);
+		file.name = inputname[i];
 
+		getline(file_input, line);
+		getline(file_input, line);
+		/*Tabela de uso*/
+		while (line != "\0") {
+			aux="";
+			j=0;
+			while (line[j] != ' ') {
+				aux = aux + line[j];
+				j++;
+			}
+			table_use.label = aux;
+			j++;
+			aux="";
+			while (j<line.length()) {
+				aux = aux + line[j];
+				j++;
+			}
+			table_use.position = atoi(aux.c_str());
+			file.table_use.push_back(table_use);
+			getline(file_input, line);
+		}
+
+		getline(file_input, line);
+		getline(file_input, line);
+		/*Tabela de definições*/
+		while (line != "\0") {
+			aux="";
+			j=0;
+			while (line[j] != ' ') {
+				aux = aux + line[j];
+				j++;
+			}
+			table_definition.label = aux;
+			j++;
+			aux="";
+			while (j<line.length()) {
+				aux = aux + line[j];
+				j++;
+			}
+			table_definition.position = atoi(aux.c_str());
+			file.table_definition.push_back(table_definition);
+			getline(file_input, line);
+		}
+
+		getline(file_input, line);
+		getline(file_input, line);
+		/*Relativo*/
+		j=0;
+		while (j<line.length()) {
+			aux="";
+			while (line[j] != ' ') {
+				aux = aux + line[j];
+				j++;
+			}
+			j++;
+			file.code.push_back(atoi(aux.c_str()));
+		}
+
+
+		getline(file_input, line);
+		getline(file_input, line);
+		/*Code*/
+		getline(file_input, line);
+		j=0;
+		while (j<line.length()) {
+			aux="";
+			while (line[j] != ' ') {
+				aux = aux + line[j];
+				j++;
+			}
+			j++;
+			file.code.push_back(atoi(aux.c_str()));
+		}
+
+		files.push_back(file);
 
 		file_input.close();
 	}
-
 }
 
 bool fexists(const string &filename){
