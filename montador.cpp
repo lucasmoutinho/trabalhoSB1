@@ -260,7 +260,7 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
         else{
           num << line_count;
           aux = num.str();
-          word_error = "ERROR: Número de operandos inválidos para a diretiva " + word + " na linha:" + aux;
+          word_error = "ERROR SINTATICO: Número de operandos inválidos para a diretiva " + word + " na linha: " + aux;
           insert_operand_error(word_error);
           error = true;
         }
@@ -269,7 +269,7 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
         if(number_operands != directives_table[i].number_operands){
           num << line_count;
           aux = num.str();
-          word_error = "ERROR: Número de operandos inválidos para a diretiva " + word + " na linha:" + aux;
+          word_error = "ERROR SINTATICO: Número de operandos inválidos para a diretiva " + word + " na linha: " + aux;
           insert_operand_error(word_error);
           error = true;
         }
@@ -298,7 +298,7 @@ int get_instruction_length(string word, unsigned int number_operands, int line_c
       if(number_operands != instructions_table[i].number_operands){
         num << line_count;
         aux = num.str();
-        word_error = "ERROR: Número de operandos inválidos para a instrução " + word + " na linha:" + aux;
+        word_error = "ERROR SINTATICO: Número de operandos inválidos para a instrução " + word + " na linha: " + aux;
         insert_operand_error(word_error);
         error = true;
       }
@@ -325,7 +325,7 @@ int get_instruction_opcode(string word){
     }
   }
   if(opcode == -1){
-    cout << "ERROR: Não encontrado o Opcode da instrução " << word << endl;
+    cout << "ERROR SEMANTICO: Não encontrado o Opcode da instrução " << word << endl;
   }
   return opcode;
 }
@@ -470,7 +470,7 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
     }
   }
   if (rotCount >=2) {
-    cout << "ERROR: Dois rotulos para mesma instrução, linha: " << *line_count << endl;
+    cout << "ERROR SINTATICO: Dois rotulos para mesma instrução, linha: " << *line_count << endl;
     error = true;
   }
   return words;
@@ -651,7 +651,7 @@ void insert_section_table(vector<string> words, int position_count, int line_cou
         new_section.position = position_count;
       }
       if (flag == 0) {
-        cout << "ERROR: SECTION não existente, linha: " << line_count << endl;
+        cout << "ERROR SEMANTICO: SECTION não existente, linha: " << line_count << endl;
         error = true;
       }
       section_table.push_back(new_section);
@@ -709,11 +709,11 @@ void verify_text_section() {
   }
 
   if (flag == 0) {
-    cout << "ERROR: SECTION TEXT não encontrada!" << endl;
+    cout << "ERROR SINTATICO: SECTION TEXT não encontrada!" << endl;
     error = true;
   }
   if (section_table[0].section != "TEXT") {
-    cout << "ERROR: SECTION TEXT deve ser a primeira!" << endl;
+    cout << "ERROR SINTATICO: SECTION TEXT deve ser a primeira!" << endl;
     error = true;
   }
 }
@@ -817,7 +817,7 @@ void first_passage() {
           error = insert_label_TS(words[0], position_count);
         }
         if(error == -1){
-          cout << "ERROR: Símbolo redefinido na linha: " << line_count << endl;
+          cout << "ERROR SINTATICO: Símbolo redefinido, na linha: " << line_count << endl;
           error = true;
         }
       }
@@ -841,7 +841,7 @@ void first_passage() {
           position_count = position_count + length;
         }
         else{
-          cout << "ERROR: Operação não identificada na linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: Operação não identificada, na linha: " << line_count << endl;
           error = true; 
         }
       }
@@ -869,11 +869,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Símbolo de salto não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Símbolo de salto não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num < section_table[0].position) || (num > section_table[1].position-1)) {
-      cout << "ERROR: Label de salto fora da seção TEXT! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Label de salto fora da seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -894,12 +894,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
         }
       }
       if (space_count > 2) {
-        cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
+        cout << "ERROR LEXICO: Expressão não valida! Linha: " << line_count << endl;
         error = true;
       }
     }
     else {
-      cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
+      cout << "ERROR LEXICO: Expressão não valida! Linha: " << line_count << endl;
       error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
@@ -908,11 +908,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Símbolo não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Símbolo não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Operando na seção TEXT! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Operando na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -936,12 +936,12 @@ void check_instruction_errors(vector<string> words, int position_count, int line
         }
       }
       if (space_count > 2) {
-        cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
+        cout << "ERROR LEXICO: Expressão não valida! Linha: " << line_count << endl;
         error = true;
       }
     }
     else {
-      cout << "ERROR: Expressão não valida! Linha: " << line_count << endl;
+      cout << "ERROR LEXICO: Expressão não valida! Linha: " << line_count << endl;
       error = true;
     }
     for(i=0;i<symbols_table.size();i++) {
@@ -950,11 +950,11 @@ void check_instruction_errors(vector<string> words, int position_count, int line
       }
     }
     if (num == -1) {
-      cout << "ERROR: Símbolo não encontrado! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Símbolo não encontrado! Linha: " << line_count << endl;
       error = true;
     }
     if ((num > section_table[0].position) && (num < section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Operando na seção TEXT! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Operando na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
@@ -962,7 +962,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
   if (words[1] == "DIV") {
     for(i=0;i<const_table.size();i++) {
       if ((words[2] == const_table[i].label) && (const_table[i].value == 0)) {
-        cout << "ERROR: Divisão por 0! Linha: " << line_count << endl;
+        cout << "ERROR SEMANTICO: Divisão por 0! Linha: " << line_count << endl;
         error = true;
       }
     }
@@ -971,7 +971,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
   if ((words[1] == "STORE") || (words[1] == "INPUT")) {
     for(i=0;i<const_table.size();i++) {
       if (words[2] == const_table[i].label) {
-        cout << "ERROR: STORE em CONST! Linha: " << line_count << endl;
+        cout << "ERROR SEMANTICO: STORE em CONST! Linha: " << line_count << endl;
         error = true;
       }
     }
@@ -981,7 +981,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
   if (words.size() >= 3) {
     for (j=0;j<words[2].length();j++) {
       if ((words[2][j] < '0' || words[2][j] >'9' ) && (words[2][j] < 'a' || words[2][j] >'z' ) && (words[2][j] < 'A' || words[2][j] > 'Z') && words[2][j] != ' ' && words[2][j] != '_' && words[2][j] != '+' && words[2][j] != '-') {
-        cout << "ERROR: Operando possui um caractere não válido: " << line_count << endl;
+        cout << "ERROR LEXICO: Operando possui um caractere não válido: " << line_count << endl;
         error = true;
       }
     }
@@ -990,7 +990,7 @@ void check_instruction_errors(vector<string> words, int position_count, int line
   if (words.size() == 4) {
     for (j=0;j<words[3].length();j++) {
       if ((words[3][j] < '0' || words[3][j] >'9' ) && (words[3][j] < 'a' || words[3][j] >'z' ) && (words[3][j] < 'A' || words[3][j] > 'Z') && words[3][j] != ' ' && words[3][j] != '_' && words[3][j] != '+' && words[3][j] != '-') {
-        cout << "ERROR: Operando possui um caractere não válido: " << line_count << endl;
+        cout << "ERROR LEXICO: Operando possui um caractere não válido: " << line_count << endl;
         error = true;
       }
     }
@@ -998,14 +998,14 @@ void check_instruction_errors(vector<string> words, int position_count, int line
 
   if (words.size() >= 3) {
     if ((words[2][0] >= '0' && words[2][0] <= '9') && (words[1] != "SPACE") && (words[1] != "CONST")) {
-      cout << "ERROR: Operando começa com um número: " << line_count << endl;
+      cout << "ERROR LEXICO: Operando começa com um número: " << line_count << endl;
       error = true;
     }
   }
 
   if (words.size() == 4) {
     if ((words[3][0] >= '0' && words[3][0] <= '9') && (words[1] != "SPACE") && (words[1] != "CONST")) {
-      cout << "ERROR: Operando começa com um número: " << line_count << endl;
+      cout << "ERROR LEXICO: Operando começa com um número: " << line_count << endl;
       error = true;
     }
   }
@@ -1029,33 +1029,33 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
 
   if (isntruction != -1) {
     if ((position_count < section_table[0].position) || (position_count > section_table[1].position)) {
-      cout << "ERROR: Instrução fora da seção TEXT! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Instrução fora da seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
   }
   else if (diretive != -1) {
     if ((position_count > section_table[0].position) && (position_count <= section_table[1].position) && (words[1] != "SECTION")) {
-      cout << "ERROR: Diretiva na seção TEXT! Linha: " << line_count << endl;
+      cout << "ERROR SEMANTICO: Diretiva na seção TEXT! Linha: " << line_count << endl;
       error = true;
     }
     if (section_table.size() == 3) {
       if (section_table[1].section == "DATA") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "CONST")) {
-          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
         if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "SPACE")) {
-          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (((position_count < section_table[1].position) || (position_count > section_table[2].position)) && (words[1] == "SPACE")) {
-          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
          if ((position_count > section_table[1].position) && (position_count <= section_table[2].position) && (words[1] != "SECTION") && (words[1] == "CONST")) {
-          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
       }
@@ -1063,13 +1063,13 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
     else {
       if (section_table[1].section == "DATA") {
         if (words[1] == "SPACE") {
-          cout << "ERROR: SPACE fora da seção BSS! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: SPACE fora da seção BSS! Linha: " << line_count << endl;
           error = true;
         }
       }
       if (section_table[1].section == "BSS") {
         if (words[1] == "CONST") {
-          cout << "ERROR: CONST fora da seção DATA! Linha: " << line_count << endl;
+          cout << "ERROR SEMANTICO: CONST fora da seção DATA! Linha: " << line_count << endl;
           error = true;
         }
       }
@@ -1142,7 +1142,7 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
     else if(number_operands != 0){
       num << line_count;
       aux = num.str();
-      word_error = "ERROR: Número de operandos inválidos para a instrução " + words[1] + " na linha:" + aux;
+      word_error = "ERROR SINTATICO: Número de operandos inválidos para a instrução " + words[1] + " na linha:" + aux;
       insert_operand_error(word_error);
       error = true;
     }
@@ -1261,7 +1261,7 @@ bool correcet_execution(int argc, string s) {
   s = s + ".asm";
   bool correct=true;
   if (argc != 2) {
-    cout << "ERROR: Numero de argumentos errados! Apenas um arquivo de entrada é permitido por execução" << endl;
+    cout << "ERROR SEMANTICO: Numero de argumentos errados! Apenas um arquivo de entrada é permitido por execução" << endl;
     correct = false;
   }
   if (s.length() <= 4) {
@@ -1297,12 +1297,12 @@ int main(int argc, char *argv[]) {
       }
 
       else{
-        cout << "ERROR: O Arquivo "<< argv[1] <<".asm não existe" << endl;
+        cout << "ERROR SEMANTICO: O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
     }
   }
   else{
-    cout << "ERROR: Número de argumentos não pode ser vazio. Por favor insira o nome de um arquivo de entrada na linha de comando" << endl;
+    cout << "ERROR SEMANTICO: Número de argumentos não pode ser vazio. Por favor insira o nome de um arquivo de entrada na linha de comando" << endl;
   }
 
   return 0;
