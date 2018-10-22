@@ -75,3 +75,7 @@ Para executar o programa do ligador, utilize o seguinte comando:
 Onde "arquivo1", "arquivo2", "arquivo3", "arquivo4" devem ser nomes de códigos objetos: "arquivo1.obj", "arquivo2.obj", "arquivo3.obj", "arquivo4.obj" presentes no diretório local. São necessários de 1 a 4 arquivos por linha de comando para realizar a ligação dos mesmos. 
 
 Ao executar o ligador com nomes válidos de arquivos objetos, este irá realizar a ligação dos mesmos; informando se houveram erros durante o processo. Caso erros tenham sido identificados, as mensagens informando o erro serão impressas no terminal. Caso nenhum erro tenha sido identificado será impresso a mensagem: "Arquivo(s) ligado(s) corretamente!" e criado um "arquivo.e" no diretório local (seguindo o nome do primeiro argumento passado na linha de comando), contendo os opcodes e operandos.
+
+### TESTE:
+
+Os arquivos: exem1.asm e exem2.asm presentes no diretório são dois módulos feitos a partir da linguagem Assembly hipotética e que podem ser utilizados como testes para averiguar o correto funcionamento do montador e do ligador
