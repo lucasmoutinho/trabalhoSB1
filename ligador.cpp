@@ -125,7 +125,7 @@ void verify_tables_use() {
     for(j = 0; j < use_size; j++){
       found = find_at_definition_global(files[i].table_use[j].label);
       if(!found){
-        cout << "ERROR: Símbolo " << files[i].table_use[j].label << " da tabela de uso do arquivo " << files[i].name <<".obj não foi encontrado em nenhuma tabela de definição dos outros módulos. Processo de ligação foi interrompido" << endl;
+        cout << "ERROR SEMANTICO: Símbolo " << files[i].table_use[j].label << " da tabela de uso do arquivo " << files[i].name <<".obj não foi encontrado em nenhuma tabela de definição dos outros módulos. Processo de ligação foi interrompido" << endl;
         exit(0);
       }
     }
@@ -168,7 +168,7 @@ void verify_one_file() {
       }
     }
     else{
-      cout << "ERROR: Apenas um módulo encontrado: (" << inputname[0] << ".obj). É necessário mais de um para a ligação correta" << endl;
+      cout << "ERROR SEMANTICO: Apenas um módulo encontrado: (" << inputname[0] << ".obj). É necessário mais de um para a ligação correta" << endl;
       exit(0);
     }
   }
@@ -199,7 +199,7 @@ void verify_if_all_file_is_module() {
     inputfile.close();
   }
   if(error){
-    cout << "ERROR: Arquivo " << inputname[i] <<".obj não é módulo. Ao passar mais de um arquivo como argumento, todos precisam ser módulos para a correta ligação" << endl;
+    cout << "ERROR SEMANTICO: Arquivo " << inputname[i] <<".obj não é módulo. Ao passar mais de um arquivo como argumento, todos precisam ser módulos para a correta ligação" << endl;
     exit(0);
   }
 }
@@ -315,7 +315,7 @@ void all_file_exist(int argc, char *argv[]) {
 	for(i = 0; i < num_arquivos; i++){
 		inputname.push_back(argv[i+1]);
 		if(!(fexists((inputname[i] + ".obj").c_str()))){
-			cout << "ERROR: O Arquivo " << inputname[i] << ".obj não existe" << endl;
+			cout << "ERROR SEMANTICO: O Arquivo " << inputname[i] << ".obj não existe" << endl;
 			exit(0);
 		}
 	}
@@ -323,11 +323,11 @@ void all_file_exist(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]){
 	if(argc < 2) {
-		cout << "ERROR: Número de argumentos não pode ser vazio. Por favor insira o nome de um a quatro arquivos de entrada na linha de comando" << endl;
+		cout << "ERROR SINTATICO: Número de argumentos não pode ser vazio. Por favor insira o nome de um a quatro arquivos de entrada na linha de comando" << endl;
 		exit(0);
 	}
 	if(argc > 5) {
-		cout << "ERROR: Número de argumentos não pode ultrapassar o limite de 4 nomes de arquivo" << endl;
+		cout << "ERROR SINTATICO: Número de argumentos não pode ultrapassar o limite de 4 nomes de arquivo" << endl;
 		exit(0);
 	}
 	all_file_exist(argc, argv);
