@@ -438,6 +438,7 @@ vector<string> separate_instructions(string line, ifstream *inputfile, int *line
     }
     else {
       getline(*inputfile, line);
+      transform(line.begin(), line.end(), line.begin(), ::toupper); /*Deixa toda a string maiuscula*/
       i=0;
       j=0;
       *line_count = *line_count + 1;

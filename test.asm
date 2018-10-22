@@ -9,7 +9,6 @@ ROT:    INPUT       MOD_B
 ROT2: 
 
 
-
 			       COPY N2, N3 
 COPY N3, R + 1 
 
