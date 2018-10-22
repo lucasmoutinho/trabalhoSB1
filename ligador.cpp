@@ -35,8 +35,16 @@ struct file_struct {
 };
 
 vector<file_struct> files;
-table_definition_struct table_definition_global;
+vector<table_definition_struct> table_definition_global;
 
+
+void create_global_table_use() {
+
+}
+
+void update_global_table_use() {
+	
+}
 
 void verify_one_file() {
   ifstream inputfile;
@@ -199,6 +207,8 @@ int main(int argc, char *argv[]){
   else{
     verify_if_all_file_is_module();
     parser();
+    create_global_table_use();
+    update_global_table_use();
   }
 	cout << "Arquivo ligado corretamente" << endl;
 
