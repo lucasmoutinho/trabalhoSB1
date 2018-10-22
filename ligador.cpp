@@ -14,6 +14,7 @@
 using namespace std;
 
 vector<string> inputname;
+int num_arquivos;
 
 bool fexists(const string &filename){
   ifstream ifile(filename.c_str());
@@ -31,7 +32,8 @@ int main(int argc, char *argv[]){
     cout << "ERROR: Número de argumentos não pode ultrapassar o limite de 4 nomes de arquivo" << endl;
   }
   else{
-    for(i = 0; i < (argc-1); i++){
+    num_arquivos = argc-1;
+    for(i = 0; i < num_arquivos; i++){
       inputname.push_back(argv[i+1]);
       if(!(fexists((inputname[i] + ".obj").c_str()))){
         correct_execution = false;
