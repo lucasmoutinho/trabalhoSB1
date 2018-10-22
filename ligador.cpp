@@ -342,6 +342,9 @@ int main(int argc, char *argv[]){
     update_with_use_table();
     update_relative();
     print_file();
+
+    print_global_table();
+    print_code();
   }
 	cout << "Arquivo ligado corretamente" << endl;
 
