@@ -38,6 +38,46 @@ vector<file_struct> files;
 vector<table_definition_struct> table_definition_global;
 vector<int> mod_global;
 
+void print_file() {
+	ofstream output;
+	unsigned int i, j;
+
+	output.open((inputname[0] + ".e").c_str());
+
+	for (i=0;i<files.size();i++) {
+		for (j=0;j<files[i].code.size();j++) {
+			output << files[i].code[j] << " ";
+		}
+	}
+}
+
+void update_relative() {
+	unsigned int i, j, index;
+	for (i=0;i<files.size();i++) {
+		for (j=0;j<files[i].relative.size();j++) {
+			index = files[i].relative[j];
+			files[i].code[index] = files[i].code[index] + mod_global[i];
+		}
+	}
+}
+
+void update_with_use_table() {
+	int length, index;
+	string aux;
+	unsigned int i, j, h;
+	for (i=0;i<files.size();i++) {
+		for (j=0;j<files[i].table_use.size();j++) {
+			aux = files[i].table_use[j].label;
+			index = files[i].table_use[j].position;
+			for (h=0;h<table_definition_global.size();h++) {
+				if (table_definition_global[h].label == aux) {
+					length = table_definition_global[h].position;
+				}
+			}
+			files[i].code[index] = files[i].code[index] + length;
+		}
+	}
+}
 
 void print_global_table() {
 	unsigned int i;
@@ -48,7 +88,19 @@ void print_global_table() {
 	cout << "-------------" << endl;
 }
 
-void create_global_table_use() {
+void print_code() {
+	unsigned int i, j;
+	cout << "-------------" << endl;
+	for (i=0;i<files.size();i++) {
+		for (j=0;j<files[i].code.size();j++) {
+			cout << files[i].code[j] << " ";
+		}
+		cout << endl;
+	}
+	cout << "-------------" << endl;
+}
+
+void create_global_table_definition() {
 	unsigned int i, j,mod=0;
 	table_definition_struct table;
 
@@ -253,8 +305,13 @@ int main(int argc, char *argv[]){
   else{
     verify_if_all_file_is_module();
     parser();
-    create_global_table_use();
+    create_global_table_definition();
+    update_with_use_table();
+    update_relative();
+    print_file();
+
     print_global_table();
+    print_code();
   }
 	cout << "Arquivo ligado corretamente" << endl;
 
