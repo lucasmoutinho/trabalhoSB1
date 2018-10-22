@@ -1216,7 +1216,7 @@ int main(int argc, char *argv[]) {
       }
 
       else{
-        cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
+        cout << "ERROR: O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
     }
   }
