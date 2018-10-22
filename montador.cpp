@@ -697,23 +697,24 @@ void insert_relative(vector<string> words, int line_count) {
   if (flag != -1) {
     if (size_elem >= 1) {
       relative_index++;
-      if (words[1].find(" + ") != string::npos) {
-        separate_expression(words[1], &op1, &op2);
+      if (words[2].find(" + ") != string::npos) {
+        separate_expression(words[2], &op1, &op2);
       }
       else {
-        op1 = words[1];
+        op1 = words[2];
       }
       if(!is_symbol_extern(op1)) {
         relative_vec.push_back(relative_index);
       }
       relative_index++;
     }
+    op1 = "";
     if (size_elem == 2) {
-      if (words[2].find(" + ") != string::npos) {
-        separate_expression(words[2], &op1, &op2);
+      if (words[3].find(" + ") != string::npos) {
+        separate_expression(words[3], &op1, &op2);
       }
       else {
-        op1 = words[2];
+        op1 = words[3];
       }
       if(!is_symbol_extern(op1)) {
         relative_vec.push_back(relative_index);
@@ -1213,7 +1214,7 @@ int main(int argc, char *argv[]) {
           cout << "Arquivo montado corretamente!" << endl;
         }
       }
-      
+
       else{
         cout << "O Arquivo "<< argv[1] <<".asm não existe" << endl;
       }
