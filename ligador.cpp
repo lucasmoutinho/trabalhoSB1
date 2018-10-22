@@ -47,15 +47,27 @@ void verify_one_file() {
 
   inputfile.open((inputname[0] + ".obj").c_str()); /*Abre o arquivo*/
 
-  if(getline(inputfile,line)){
-    if (line.find("TABLE USE") != string::npos){
+  getline(inputfile,line);
+  if(line.find("TABLE USE") != string::npos){
+    getline(inputfile, line);
+    if (line.empty()){
+      while(getline(inputfile, line)){
+        if(line.find("CODE") != string::npos){
+          getline(inputfile, line);
+          objfile.open((inputname[0] + ".e").c_str()); /*Abre o arquivo executável*/
+          objfile << line;
+          break;
+        }   
+      }
+    }
+    else{
       cout << "ERROR: Apenas um módulo encontrado: (" << inputname[0] << ".obj). É necessário mais de um para a ligação correta" << endl;
       exit(0);
     }
-    else{
-      objfile.open((inputname[0] + ".e").c_str()); /*Abre o arquivo executável*/
-      objfile << line;
-    }
+  }
+  else{
+    objfile.open((inputname[0] + ".e").c_str()); /*Abre o arquivo executável*/
+    objfile << line;
   }
 
   inputfile.close();
