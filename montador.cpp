@@ -10,6 +10,7 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -63,6 +64,7 @@ vector<const_struct> const_table; /*Tabela de constantes*/
 vector<int> relative_vec; /*Vetor de relativos*/
 vector<int> code_vec; /*Vetor de codigo*/
 vector<string> pre_vec; /*vetor de instruções pre processadas*/
+vector<string> operand_errors; /*Vetor com erros para numero de operandos*/
 bool error = false; /*Variavel que indica se aconteceu algum erro*/
 bool is_module=false;
 string inputname;
@@ -209,6 +211,32 @@ void initialize_directives_table(){
 
 }
 
+/* Print Erros de numero de operandos no terminal, para que não se repitam a cada chamada de função */
+void print_operand_errors(){
+  unsigned int table_size = (unsigned int)operand_errors.size();
+  unsigned int i;
+
+  for(i = 0; i < table_size; i++){
+    cout << operand_errors[i] << endl;
+  }
+}
+
+void insert_operand_error(string word){
+  unsigned int table_size = (unsigned int)operand_errors.size();
+  unsigned int i;
+  bool flag = false;
+
+  for (i = 0; i < table_size; i++){
+    if (operand_errors[i].find(word) != string::npos){
+      flag = true;
+      break;
+    }
+  }
+  if(!flag){
+    operand_errors.push_back(word);
+  }
+}
+
 /* 
 Retorna o tamanho da diretiva caso seja uma diretiva. 
 Retorna -1 caso não seja uma diretiva 
@@ -216,6 +244,8 @@ Retorna -1 caso não seja uma diretiva
 int get_directive_length(string word, unsigned int number_operands, int line_count, string space_length = ""){
   int length = -1;
   unsigned int i, directives_size;
+  string word_error, aux;
+  ostringstream num;
 
   directives_size = (unsigned int)directives_table.size();
   for(i = 0; i < directives_size; i++){
@@ -228,13 +258,19 @@ int get_directive_length(string word, unsigned int number_operands, int line_cou
           length = directives_table[i].length;
         }
         else{
-          cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
+          num << line_count;
+          aux = num.str();
+          word_error = "ERROR: Número de operandos inválidos para a diretiva " + word + " na linha:" + aux;
+          insert_operand_error(word_error);
           error = true;
         }
       }
       else{
         if(number_operands != directives_table[i].number_operands){
-          cout << "ERROR: Número de operandos inválidos para a diretiva " << word << " na linha:" << line_count << endl;
+          num << line_count;
+          aux = num.str();
+          word_error = "ERROR: Número de operandos inválidos para a diretiva " + word + " na linha:" + aux;
+          insert_operand_error(word_error);
           error = true;
         }
         length = directives_table[i].length;
@@ -253,12 +289,17 @@ Retorna -1 caso não seja uma instrução */
 int get_instruction_length(string word, unsigned int number_operands, int line_count){
   int length = -1;
   unsigned int i, instructions_size;
+  string word_error, aux;
+  ostringstream num;
 
   instructions_size = (unsigned int)instructions_table.size();
   for(i = 0; i < instructions_size; i++){
     if(word == instructions_table[i].instruction){
       if(number_operands != instructions_table[i].number_operands){
-        cout << "ERROR: Número de operandos inválidos para a instrução " << word << " na linha:" << line_count << endl;
+        num << line_count;
+        aux = num.str();
+        word_error = "ERROR: Número de operandos inválidos para a instrução " + word + " na linha:" + aux;
+        insert_operand_error(word_error);
         error = true;
       }
       length = instructions_table[i].length;
@@ -667,11 +708,11 @@ void verify_text_section() {
   }
 
   if (flag == 0) {
-    cout << "ERROR, SECTION TEXT não encontrada!" << endl;
+    cout << "ERROR: SECTION TEXT não encontrada!" << endl;
     error = true;
   }
   if (section_table[0].section != "TEXT") {
-    cout << "ERROR, SECTION TEXT deve ser a primeira!" << endl;
+    cout << "ERROR: SECTION TEXT deve ser a primeira!" << endl;
     error = true;
   }
 }
@@ -1007,6 +1048,8 @@ void check_section_instruction_errors(vector<string> words, int position_count, 
 void insert_code_vec(vector<string> words, unsigned int number_operands, int line_count, int position_count, bool instruction = true){
   int value;
   string label, second_label;
+  string word_error, aux;
+  ostringstream num;
 
   if(instruction){
     code_vec.push_back(get_instruction_opcode(words[1]));
@@ -1063,7 +1106,10 @@ void insert_code_vec(vector<string> words, unsigned int number_operands, int lin
       code_vec.push_back(value);
     }
     else if(number_operands != 0){
-      cout << "ERROR: Número de operandos inálidos na linha: " << line_count << endl;
+      num << line_count;
+      aux = num.str();
+      word_error = "ERROR: Número de operandos inválidos para a instrução " + words[1] + " na linha:" + aux;
+      insert_operand_error(word_error);
       error = true;
     }
   }
@@ -1173,6 +1219,7 @@ void second_passage() {
       line_count++;
     }
   }
+  print_operand_errors();
 }
 
 /*Verifica se o arquivo foi enviado corretamente*/
